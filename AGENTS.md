@@ -26,9 +26,9 @@ Target toolchain: Vivado 2020.2.
   - `*.patch` — only for the 5 patched games (Bagman, Berzerk, Galaga, Pooyan,
     Popeye): `bagman_xor_width.patch`, `berzerk_reset_sensitivity.patch`,
     `galaga_credit_mode_fix.patch`, `pooyan_t80_xor_width.patch`,
-    `popeye_linmix_sensitivity.patch`. The other 5 have none yet.
-  - `vhdl_<game>_rev_<...>/` — the unzipped Dar sources (all 10 present; the
-    5 patched games already have their fix applied in-tree).
+    `popeye_linmix_sensitivity.patch`. All 5 are already applied in-tree.
+    The other 5 games have none yet.
+  - `vhdl_<game>_rev_<...>/` — the unzipped Dar sources.
 - `.gitignore` — enforces the copyright rules: `**/vhdl_*/*` ignores the whole
   Dar source tree (incl. staged MAME ROMs and shipped tool binaries), then
   negations re-include `tools/`, `tools/*_unzip/`, the `make_*_proms.sh` scripts,
@@ -54,12 +54,13 @@ the tree so far, and only partial:
   to see them.
 - **Generated PROM VHDs under `tools/<game>_unzip/` will show as untracked**
   in `git status` when produced (the `!*.vhd` gitignore negation) — never
-  commit them (see Rules). None exist anywhere yet.
+  commit them (see Rules).
 - `make_pooyan_proms.sh` EXISTS and is git-tracked at
   `Pooyan-by-Dar/vhdl_pooyan_rev_0_2_2020_04_26/tools/pooyan_unzip/` — it is the
   reference implementation for the missing 9 (`make_<game>_proms.sh`). It is a
   mechanical translation of the Dar `.bat` (a `cat` concatenation + a
-  `make_vhdl_prom` call per output VHD), run from its own dir.
+  `make_vhdl_prom` call per output VHD), run from its own dir. (The main
+  README's "does not exist yet" is stale for Pooyan.)
 - `make_vhdl_prom` must be rebuilt into `tools/<game>_unzip/` from
   `tools/tools_prom_src/src/make_vhdl_prom.c` with `gcc make_vhdl_prom.c -lm`
   (no `.bat` uses `duplicate_byte`): the shipped
@@ -77,11 +78,12 @@ the tree so far, and only partial:
 ## Porting facts
 
 - Strategy: reuse the Dar core verbatim; replace only the board-facing layer in
-  a new top wrapper — Altera PLL → Xilinx `clk_wiz_0` MMCM, reset polarity
-  (Basys 3 btnC is active-high), pin remap, XDC constraints, and a scandoubler
-  to lift 15 kHz arcade timing to 31 kHz VGA.
+  a new top wrapper (`<game>_basys3.vhd` naming convention) — Altera PLL →
+  Xilinx `clk_wiz_0` MMCM, reset polarity (Basys 3 btnC is active-high, `reset
+  <= btnC`), pin remap, XDC constraints, and a scandoubler to lift 15 kHz
+  arcade timing to 31 kHz VGA.
 - The per-game `README.md` is the source of truth for wiring; ports wire PS/2
-  on JB1/JB3 and audio on JC.
+  on JC1/JC3 and audio on JB (PmodAMP2).
 - 15 kHz video: every Dar core produces native 15 kHz + `csync`; cores with
   `tv15Khz_mode` scan-double internally (Bagman, Berzerk, Kick, Popeye,
   Sky Skipper, Solar Fox), the rest need the external scandoubler bypassed
