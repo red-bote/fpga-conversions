@@ -1,0 +1,12 @@
+diff --git a/vhdl_berzerk_rev_0_1_2018_08_08/rtl_dar/berzerk.vhd b/vhdl_berzerk_rev_0_1_2018_08_08/rtl_dar/berzerk.vhd
+--- a/vhdl_berzerk_rev_0_1_2018_08_08/rtl_dar/berzerk.vhd
++++ b/vhdl_berzerk_rev_0_1_2018_08_08/rtl_dar/berzerk.vhd
+@@ -327,7 +327,7 @@
+ 	end if;
+ end process;
+ 
+-process (clock_10, cpu_iorq_n, cpu_addr)
++process (clock_10, cpu_iorq_n, cpu_addr, reset)
+ begin
+ 	if reset = '1' then
+ 		cpu_int_n <= '1';
