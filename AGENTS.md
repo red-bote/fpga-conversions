@@ -6,7 +6,7 @@ Target toolchain: Vivado 2020.2.
 
 ## Layout
 
-- `downloads/` — the 10 `vhdl_<game>_rev_*.zip` DarFPGA archives.
+- `downloads/` — the 10 `vhdl_<game>_rev_*.zip` DarFPGA archives (gitignored).
 - `download_darfpga.sh` — fetches the zips: `./download_darfpga.sh [--force]`
   (skips existing; checks the `PK` zip magic to reject SourceForge HTML pages).
 - `unzip_darfpga.sh` — unzips every zip into its game dir AND applies that
@@ -18,28 +18,41 @@ Target toolchain: Vivado 2020.2.
   - `readme-dar.txt` — upstream Dar release notes (keep as-is).
   - `README.md` — the Basys 3 port doc: IO mapping, keyboard/joystick bindings,
     MAME ROM set + `make_<game>_proms.sh` outputs, how to apply/verify the fix.
+    The 10 READMEs also document each game's *solved* `clk_wiz_0` MMCM register
+    values (`DIVCLK_DIVIDE`, `CLKFBOUT_MULT_F`, `CLKOUT0/1_DIVIDE`) — reuse
+    these when creating a new game's MMCM instead of solving them again.
   - `*.patch` — only for the 5 patched games (Bagman, Berzerk, Galaga, Pooyan,
     Popeye): `bagman_xor_width.patch`, `berzerk_reset_sensitivity.patch`,
     `galaga_credit_mode_fix.patch`, `pooyan_t80_xor_width.patch`,
     `popeye_linmix_sensitivity.patch`. The other 5 have none yet.
   - `vhdl_<game>_rev_<...>/` — the unzipped Dar sources (all 10 present; the
     5 patched games already have their fix applied in-tree).
+- `.gitignore` — enforces the copyright rules: `**/vhdl_*/*` ignores the whole
+  Dar source tree (incl. generated PROM VHDL), then negations re-include
+  `tools/`, `tools/*_unzip/`, and the `make_*_proms.sh` scripts so they stay
+  tracked. A new `make_<game>_proms.sh` needs the same `!`-negation pattern
+  (parent dirs must be re-included before the file).
 
-## What exists vs. what the READMEs describe
+## Porting status
 
-Per-game `README.md`s describe the *target* port, not the current tree. Absent
-(created during porting): the Vivado `.xpr`, the `<game>_basys3.vhd` top
-wrapper, `clk_wiz_0` MMCM IP, XDC, `imports/`, and `make_<game>_proms.sh` —
-only the `.bat` ROM scripts ship in the Dar archives. The `tools/<game>_unzip/`
-staging dirs and `.bat` scripts DO exist under `vhdl_<game>_rev_<...>/tools/`.
-The shipped `tools/tools_prom_src/binaries/linux32/make_vhdl_prom` is a
-  32-bit ELF that will NOT run on a 64-bit host without a 32-bit loader
-  (`/lib/ld-linux.so.2`); it must be rebuilt from
-  `tools/tools_prom_src/src/make_vhdl_prom.c` first: `gcc make_vhdl_prom.c -lm`
-  (build commands in `src/doc_compilation.txt`; only `make_vhdl_prom` is needed,
-  no `.bat` uses `duplicate_byte`). So the missing `make_<game>_proms.sh` is a
-  mechanical translation of the `.bat`, with a build prerequisite.
-  Don't assume any project file exists; porting work creates it.
+Per-game `README.md`s describe the *target* port; only Pooyan has artifacts in
+the tree so far, and only partial:
+
+- Pooyan: `basys3/pooyan_basys3/` exists (untracked) with the `clk_wiz_0` MMCM
+  IP (100 MHz → 12.288 + 14.318 MHz) in `sources_1/imports/clk_wiz_0/`. No
+  `.xpr`, no `pooyan_basys3.vhd` wrapper, no XDC yet. The other 9 have no
+  project artifacts at all.
+- `make_pooyan_proms.sh` EXISTS and is git-tracked at
+  `Pooyan-by-Dar/vhdl_pooyan_rev_0_2_2020_04_26/tools/pooyan_unzip/` — it is the
+  reference implementation for the missing 9 (`make_<game>_proms.sh`). It is a
+  mechanical translation of the Dar `.bat` (a `cat` concatenation + a
+  `make_vhdl_prom` call per output VHD), run from its own dir, and it requires a
+  rebuilt `make_vhdl_prom` binary in the same dir: the shipped
+  `tools/tools_prom_src/binaries/linux32/make_vhdl_prom` is a 32-bit ELF that
+  will NOT run on a 64-bit host without a 32-bit loader
+  (`/lib/ld-linux.so.2`); rebuild from `tools/tools_prom_src/src/make_vhdl_prom.c`
+  with `gcc make_vhdl_prom.c -lm` (only `make_vhdl_prom` is needed, no `.bat`
+  uses `duplicate_byte`).
 - The generated PROM VHDL (`*_prog.vhd`, `*_grphx*.vhd`, `*_palette*.vhd`) is
   ABSENT from the tree — the `.xpr` references it in place under
   `tools/<game>_unzip/`, so synthesis fails with missing entities until
@@ -80,10 +93,10 @@ follow the same pattern: minimal patch + grep verification line in its README.
 
 ## Rules
 
-- This directory is NOT a git repo and no CI/build/lint tooling exists; the
-  only "verification" is the grep line in each game's `README.md` and running
-  the two shell scripts. Don't invent test commands.
-- MAME ROMs are copyrighted — never copy them into the repo or commit them
-  (if a git repo is ever initialized).
+- Git repo on `main` (remote `origin`); only commit when asked. No CI/build/lint
+  tooling exists; the only "verification" is the grep line in each game's
+  `README.md` and running the two shell scripts. Don't invent test commands.
+- MAME ROMs and the generated PROM VHDL are copyrighted — never copy them into
+  the repo or commit them. The `.gitignore` enforces this; don't weaken it.
 - Galaga's upstream file is `README.TXT` (uppercase); save it as `readme-dar.txt`
   for consistency with the other nine.

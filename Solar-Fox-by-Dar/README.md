@@ -7,6 +7,9 @@ http://darfpga.blogspot.fr). Basys 3 (Artix-7) port by Red~Bote. See
 - Vivado 2020.2 project: `basys3/solarfox_basys3.xpr` (top entity
   `solarfox_basys3`)
 - Core clock: 40 MHz (from the 100 MHz Basys 3 oscillator via `clk_wiz_0`)
+- `clk_wiz_0` Clocking Wizard (MMCM, 100 MHz in): `clk_out1` = 40.000 MHz;
+  reset active-high (btnC), `locked` used. Solved MMCM: `DIVCLK_DIVIDE=1`,
+  `CLKFBOUT_MULT_F=10.0`, `CLKOUT0_DIVIDE_F=25.0`.
 
 ## Features supported
 

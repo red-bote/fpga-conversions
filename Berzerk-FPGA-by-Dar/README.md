@@ -6,6 +6,9 @@ Dar release notes.
 
 - Vivado 2020.2 project: `berzerk_xc7/berzerk_xc7.xpr` (top entity `rtl_top`)
 - Core clock: 10 MHz (from the 100 MHz Basys 3 oscillator via `clk_wiz_0`)
+- `clk_wiz_0` Clocking Wizard (MMCM, 100 MHz in): `clk_out1` = 10.000 MHz;
+  reset active-high (btnC), `locked` used. Solved MMCM: `DIVCLK_DIVIDE=2`,
+  `CLKFBOUT_MULT_F=15.625`, `CLKOUT0_DIVIDE_F=78.125`.
 
 ## Features supported
 

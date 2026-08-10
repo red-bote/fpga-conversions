@@ -8,6 +8,10 @@ http://darfpga.blogspot.fr). Basys 3 (Artix-7) port by Red~Bote. See
   `time_pilot_basys3`)
 - Core clocks: 12.288 MHz (game core) + 14.318 MHz (sound) from the 100 MHz
   Basys 3 oscillator via `clk_wiz_0`
+- `clk_wiz_0` Clocking Wizard (MMCM, 100 MHz in): `clk_out1` = 12.288 MHz +
+  `clk_out2` = 14.318 MHz; reset active-high (btnC), `locked` used. Solved
+  MMCM: `DIVCLK_DIVIDE=7`, `CLKFBOUT_MULT_F=56.125`, `CLKOUT0_DIVIDE_F=65.25`,
+  `CLKOUT1_DIVIDE=56`.
 
 ## Features supported
 

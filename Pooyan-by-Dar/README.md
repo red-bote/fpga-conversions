@@ -8,6 +8,10 @@ Dar release notes.
   `pooyan_basys3`)
 - Core clocks: 12.288 MHz (game core) + 14.318 MHz (sound) from the 100 MHz
   Basys 3 oscillator via `clk_wiz_0`
+- `clk_wiz_0` Clocking Wizard (MMCM, 100 MHz in): `clk_out1` = 12.288 MHz +
+  `clk_out2` = 14.318 MHz; reset active-high (btnC), `locked` used. Solved
+  MMCM: `DIVCLK_DIVIDE=7`, `CLKFBOUT_MULT_F=56.125`, `CLKOUT0_DIVIDE_F=65.25`,
+  `CLKOUT1_DIVIDE=56`.
 
 ## Features supported
 
@@ -77,7 +81,8 @@ script needs `make_vhdl_prom` rebuilt from
 `tools/tools_prom_src/src/make_vhdl_prom.c` (`gcc make_vhdl_prom.c -lm`) — the
 shipped `linux32` binary is a 32-bit ELF that will not run on a 64-bit host.
 
-Game ROMs are copyrighted — never commit or redistribute them.
+Game ROMs and the generated PROM VHDL are copyrighted — never commit or
+redistribute them.
 
 ## Porting gotchas
 

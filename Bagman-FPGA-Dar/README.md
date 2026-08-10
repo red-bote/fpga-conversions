@@ -6,6 +6,9 @@ Dar release notes.
 
 - Vivado 2020.2 project: `basys3/bagman_basys3.xpr` (top entity `bagman_basys3`)
 - Core clock: 12 MHz (from the 100 MHz Basys 3 oscillator via `clk_wiz_0`)
+- `clk_wiz_0` Clocking Wizard (MMCM, 100 MHz in): `clk_out1` = 12.000 MHz;
+  reset active-high (btnC), `locked` used. Solved MMCM: `DIVCLK_DIVIDE=5`,
+  `CLKFBOUT_MULT_F=49.875`, `CLKOUT0_DIVIDE_F=83.125`.
 
 ## Features supported
 
