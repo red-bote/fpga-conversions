@@ -40,16 +40,21 @@ Target toolchain: Vivado 2020.2.
 Per-game `README.md`s describe the *target* port. Only Pooyan has artifacts in
 the tree so far, and only partial:
 
-- Pooyan: the `clk_wiz_0` MMCM IP (100 MHz → 12.288 + 14.318 MHz) exists in
-  `basys3/pooyan_basys3/.../sources_1/imports/clk_wiz_0/`, and the PROM VHDL has
-  been generated (see below). Still missing: `.xpr`, `pooyan_basys3.vhd`
-  wrapper, XDC, scandoubler import. The other 9 have no project artifacts at
-  all.
-- **Generated PROM VHDs under `tools/<game>_unzip/` show as untracked** in `git
-  status` — never commit them (see Rules). The rest of Pooyan's artifacts are
-  still gitignored (`**/vhdl_*/*`): the `basys3/pooyan_basys3/` MMCM IP and the
-  staged MAME ROMs — those exist on disk without appearing in git status, so
-  check the filesystem, not git status, to see them.
+- Pooyan: the `clk_wiz_0` MMCM IP (100 MHz → 12.288 + 14.318 MHz) exists as two
+  `.v` files at `Pooyan-by-Dar/vhdl_pooyan_rev_0_2_2020_04_26/basys3/
+  pooyan_basys3/pooyan_basys3.srcs/sources_1/imports/clk_wiz_0/` (under the
+  vhdl tree, so gitignored). MAME ROMs are staged in `tools/pooyan_unzip/` and
+  the `make_pooyan_proms.sh` + rebuilt 64-bit `make_vhdl_prom` sit next to
+  them. Still missing: generated PROM VHDL (the `.sh` exists but has NOT been
+  run — no `*.vhd` outputs yet), `.xpr`, `pooyan_basys3.vhd` wrapper, XDC,
+  scandoubler import. The other 9 games have no project artifacts at all.
+- Everything Pooyan-ish is gitignored (`**/vhdl_*/*`) except
+  `make_pooyan_proms.sh` — so the MMCM IP, the staged ROMs, and the rebuilt
+  binary never appear in `git status`; check the filesystem, not git status,
+  to see them.
+- **Generated PROM VHDs under `tools/<game>_unzip/` will show as untracked**
+  in `git status` when produced (the `!*.vhd` gitignore negation) — never
+  commit them (see Rules). None exist anywhere yet.
 - `make_pooyan_proms.sh` EXISTS and is git-tracked at
   `Pooyan-by-Dar/vhdl_pooyan_rev_0_2_2020_04_26/tools/pooyan_unzip/` — it is the
   reference implementation for the missing 9 (`make_<game>_proms.sh`). It is a
@@ -61,13 +66,8 @@ the tree so far, and only partial:
   `tools/tools_prom_src/binaries/linux32/make_vhdl_prom` is a 32-bit ELF that
   will NOT run on a 64-bit host without a 32-bit loader (`/lib/ld-linux.so.2`).
   Pooyan's rebuilt 64-bit copy is already in place next to its `.sh`.
-- Pooyan's generated PROM VHDL (`pooyan_prog.vhd`, `pooyan_sound_prog.vhd`,
-  `pooyan_char_grphx1/2.vhd`, `pooyan_sprite_grphx1/2.vhd`, `pooyan_palette.vhd`,
-  `pooyan_char_color_lut.vhd`, `pooyan_sprite_color_lut.vhd`) is PRESENT in
-  `tools/pooyan_unzip/`, generated from the MAME `pooyan.zip` ROMs staged there
-  (the `*.1.4a`-style files). The other 9 games have no staged ROMs and no
-  generated PROM VHDL — their `.xpr` will reference these files in place under
-  `tools/<game>_unzip/`, so synthesis fails with missing entities until
+- The `.xpr` for each game will reference its generated PROM VHDL in place
+  under `tools/<game>_unzip/`, so synthesis fails with missing entities until
   `make_<game>_proms.sh` runs. That step precedes project assembly and is the
   only ROM-dependent prerequisite.
 - Main `README.md` holds the authoritative 7-step per-machine port procedure
