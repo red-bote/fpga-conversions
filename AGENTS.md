@@ -9,10 +9,12 @@ Target toolchain: Vivado 2020.2.
 - `downloads/` — the 10 `vhdl_<game>_rev_*.zip` DarFPGA archives (gitignored).
 - `download_darfpga.sh` — fetches the zips: `./download_darfpga.sh [--force]`
   (skips existing; checks the `PK` zip magic to reject SourceForge HTML pages).
+  Optional positional `OUTDIR` defaults to `<script dir>/downloads`.
 - `unzip_darfpga.sh` — unzips every zip into its game dir AND applies that
   game's fix patch (`patch -p1 -N`, so already-patched trees are skipped).
-  `--force` re-unzips and re-applies. This script's `GAMES` array is the
-  authoritative game-dir ↔ zip ↔ patch mapping — don't guess dir names.
+  `--force` re-unzips and re-applies; optional positional `ZIPDIR` defaults to
+  `downloads/`. This script's `GAMES` array is the authoritative game-dir ↔ zip
+  ↔ patch mapping — don't guess dir names.
 - `<Game>-by-Dar/` (10 dirs; exact names vary, e.g. `Bagman-FPGA-Dar`,
   `Kick-Midway-MCR-by-Dar`, `Sky-skipper-by-Dar`). Each contains:
   - `readme-dar.txt` — upstream Dar release notes (keep as-is).
@@ -28,36 +30,46 @@ Target toolchain: Vivado 2020.2.
   - `vhdl_<game>_rev_<...>/` — the unzipped Dar sources (all 10 present; the
     5 patched games already have their fix applied in-tree).
 - `.gitignore` — enforces the copyright rules: `**/vhdl_*/*` ignores the whole
-  Dar source tree (incl. generated PROM VHDL), then negations re-include
-  `tools/`, `tools/*_unzip/`, and the `make_*_proms.sh` scripts so they stay
-  tracked. A new `make_<game>_proms.sh` needs the same `!`-negation pattern
-  (parent dirs must be re-included before the file).
+  Dar source tree (incl. staged MAME ROMs and shipped tool binaries), then
+  negations re-include `tools/`, `tools/*_unzip/`, the `make_*_proms.sh` scripts,
+  and generated PROM VHDL (`*.vhd`). A new `make_<game>_proms.sh` needs the same
+  `!`-negation pattern (parent dirs must be re-included before the file).
 
 ## Porting status
 
-Per-game `README.md`s describe the *target* port; only Pooyan has artifacts in
+Per-game `README.md`s describe the *target* port. Only Pooyan has artifacts in
 the tree so far, and only partial:
 
-- Pooyan: `basys3/pooyan_basys3/` exists (untracked) with the `clk_wiz_0` MMCM
-  IP (100 MHz → 12.288 + 14.318 MHz) in `sources_1/imports/clk_wiz_0/`. No
-  `.xpr`, no `pooyan_basys3.vhd` wrapper, no XDC yet. The other 9 have no
-  project artifacts at all.
+- Pooyan: the `clk_wiz_0` MMCM IP (100 MHz → 12.288 + 14.318 MHz) exists in
+  `basys3/pooyan_basys3/.../sources_1/imports/clk_wiz_0/`, and the PROM VHDL has
+  been generated (see below). Still missing: `.xpr`, `pooyan_basys3.vhd`
+  wrapper, XDC, scandoubler import. The other 9 have no project artifacts at
+  all.
+- **Generated PROM VHDs under `tools/<game>_unzip/` show as untracked** in `git
+  status` — never commit them (see Rules). The rest of Pooyan's artifacts are
+  still gitignored (`**/vhdl_*/*`): the `basys3/pooyan_basys3/` MMCM IP and the
+  staged MAME ROMs — those exist on disk without appearing in git status, so
+  check the filesystem, not git status, to see them.
 - `make_pooyan_proms.sh` EXISTS and is git-tracked at
   `Pooyan-by-Dar/vhdl_pooyan_rev_0_2_2020_04_26/tools/pooyan_unzip/` — it is the
   reference implementation for the missing 9 (`make_<game>_proms.sh`). It is a
   mechanical translation of the Dar `.bat` (a `cat` concatenation + a
-  `make_vhdl_prom` call per output VHD), run from its own dir, and it requires a
-  rebuilt `make_vhdl_prom` binary in the same dir: the shipped
+  `make_vhdl_prom` call per output VHD), run from its own dir.
+- `make_vhdl_prom` must be rebuilt into `tools/<game>_unzip/` from
+  `tools/tools_prom_src/src/make_vhdl_prom.c` with `gcc make_vhdl_prom.c -lm`
+  (no `.bat` uses `duplicate_byte`): the shipped
   `tools/tools_prom_src/binaries/linux32/make_vhdl_prom` is a 32-bit ELF that
-  will NOT run on a 64-bit host without a 32-bit loader
-  (`/lib/ld-linux.so.2`); rebuild from `tools/tools_prom_src/src/make_vhdl_prom.c`
-  with `gcc make_vhdl_prom.c -lm` (only `make_vhdl_prom` is needed, no `.bat`
-  uses `duplicate_byte`).
-- The generated PROM VHDL (`*_prog.vhd`, `*_grphx*.vhd`, `*_palette*.vhd`) is
-  ABSENT from the tree — the `.xpr` references it in place under
+  will NOT run on a 64-bit host without a 32-bit loader (`/lib/ld-linux.so.2`).
+  Pooyan's rebuilt 64-bit copy is already in place next to its `.sh`.
+- Pooyan's generated PROM VHDL (`pooyan_prog.vhd`, `pooyan_sound_prog.vhd`,
+  `pooyan_char_grphx1/2.vhd`, `pooyan_sprite_grphx1/2.vhd`, `pooyan_palette.vhd`,
+  `pooyan_char_color_lut.vhd`, `pooyan_sprite_color_lut.vhd`) is PRESENT in
+  `tools/pooyan_unzip/`, generated from the MAME `pooyan.zip` ROMs staged there
+  (the `*.1.4a`-style files). The other 9 games have no staged ROMs and no
+  generated PROM VHDL — their `.xpr` will reference these files in place under
   `tools/<game>_unzip/`, so synthesis fails with missing entities until
-  `make_<game>_proms.sh` runs on MAME ROMs. That step precedes any project
-  assembly and is the only ROM-dependent prerequisite.
+  `make_<game>_proms.sh` runs. That step precedes project assembly and is the
+  only ROM-dependent prerequisite.
 - Main `README.md` holds the authoritative 7-step per-machine port procedure
   (stage ROMs → MMCM → wrapper → scandoubler → XDC → project → verify); the
   per-game `README.md`s are the source of truth for wiring.
@@ -96,7 +108,9 @@ follow the same pattern: minimal patch + grep verification line in its README.
 - Git repo on `main` (remote `origin`); only commit when asked. No CI/build/lint
   tooling exists; the only "verification" is the grep line in each game's
   `README.md` and running the two shell scripts. Don't invent test commands.
-- MAME ROMs and the generated PROM VHDL are copyrighted — never copy them into
-  the repo or commit them. The `.gitignore` enforces this; don't weaken it.
+- MAME ROMs and the generated PROM VHDL are copyrighted — never commit them.
+  ROMs stay gitignored (enforced); generated PROM VHDs show as untracked, so
+  the no-commit rule for them is convention-only — never run `git add .` /
+  `git add -A` (it would stage them); stage only the specific files intended.
 - Galaga's upstream file is `README.TXT` (uppercase); save it as `readme-dar.txt`
   for consistency with the other nine.
