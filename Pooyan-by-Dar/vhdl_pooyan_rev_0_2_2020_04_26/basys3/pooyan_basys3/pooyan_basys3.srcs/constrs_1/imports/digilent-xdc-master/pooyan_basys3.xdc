@@ -1,14 +1,13 @@
 ## This file is a general .xdc for the Basys3 rev B board
 ## To use it in a project:
 ## - uncomment the lines corresponding to used pins
-## - rename the used ports (in this file) and change the
-##   port names in your design to match the new port names
+## - rename the used ports (in each line, after get_ports) according to the top level signal names in the project
 ##
 ## Digilent Basys3 reference manual (c) Digilent Inc.
 ## See https://github.com/Digilent/Basys3
 ##
-## Pin definitions extracted from the Digilent Basys3 master XDC.
-## Pooyan port mapping (see README.md):
+## Pin definitions extracted from the Digilent Basys3 master XDC,
+## trimmed to the Pooyan port (see README.md):
 ##   clk       -> W5   (100 MHz)
 ##   sw(15)    -> PmodAMP2 GAIN (0 = 12 dB, 1 = 6 dB)
 ##   sw(14)    -> PmodAMP2 SHUTD (low = shutdown: sw14 down = mute, up = on)
@@ -60,7 +59,7 @@ set_property IOSTANDARD LVCMOS33 [get_ports {sw[15]}]
 set_property PACKAGE_PIN U18 [get_ports btnC]
 set_property IOSTANDARD LVCMOS33 [get_ports btnC]
 
-## Pmod header JA (PS/2 keyboard + joystick B/C/D switches)
+## Pmod header JA (joystick, active-low switch to GND)
 set_property PACKAGE_PIN J1 [get_ports JA[0]]
 set_property IOSTANDARD LVCMOS33 [get_ports JA[0]]
 set_property PACKAGE_PIN L2 [get_ports JA[1]]
@@ -118,15 +117,11 @@ set_property IOSTANDARD LVCMOS33 [get_ports vgaHsync]
 set_property PACKAGE_PIN R19 [get_ports vgaVsync]
 set_property IOSTANDARD LVCMOS33 [get_ports vgaVsync]
 
-## 7-segment display (unused)
-#set_property PACKAGE_PIN W7 [get_ports {seg[0]}]
-#set_property PACKAGE_PIN W6 [get_ports {seg[1]}]
-#set_property PACKAGE_PIN U8 [get_ports {seg[2]}]
-#set_property PACKAGE_PIN V8 [get_ports {seg[3]}]
-#set_property PACKAGE_PIN U5 [get_ports {seg[4]}]
-#set_property PACKAGE_PIN V5 [get_ports {seg[5]}]
-#set_property PACKAGE_PIN U7 [get_ports {seg[6]}]
-#set_property PACKAGE_PIN V7 [get_ports {an[3]}]
-#set_property PACKAGE_PIN W8 [get_ports {an[2]}]
-#set_property PACKAGE_PIN W9 [get_ports {an[1]}]
-#set_property PACKAGE_PIN W10 [get_ports {an[0]}]
+## Configuration options, can be used for all designs
+set_property CONFIG_VOLTAGE 3.3 [current_design]
+set_property CFGBVS VCCO [current_design]
+
+## SPI configuration mode options for QSPI boot, can be used for all designs
+set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]
+set_property BITSTREAM.CONFIG.CONFIGRATE 33 [current_design]
+set_property CONFIG_MODE SPIx4 [current_design]

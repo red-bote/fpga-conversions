@@ -29,7 +29,9 @@ Dar release notes.
   `hsync`/`vsync`/`csync` signals feeding the scandoubler's
   `hsync_ext_n`/`vsync_ext_n`/`csync_ext_n` inputs, and the scandoubler's
   `hsync`/`vsync` outputs drive the toplevel `vgaHsync`/`vgaVsync` ports (the
-  Hsync/Vsync pins in Basys-3-Master.xdc).
+  Hsync/Vsync pins in `pooyan_basys3.xdc`, trimmed from the Digilent
+  Basys-3-Master.xdc at
+  <https://github.com/Digilent/Basys3/blob/master/Resources/XDC/Basys-3-Master.xdc>).
 - **Sound**: mono PWM audio on PmodAMP2 (JC header).
 - **Controls**: PS/2 keyboard + JA joystick (OR-merged), btnC = reset.
 

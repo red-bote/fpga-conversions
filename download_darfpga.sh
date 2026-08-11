@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Download the DarFPGA (darfpga) source archives for the 10 arcade games ported
+# Download the DarFPGA (darfpga) source archives for the arcade games ported
 # in this workspace, from:
 #   https://sourceforge.net/projects/darfpga/files/Software%20VHDL/
 #

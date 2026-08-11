@@ -44,9 +44,9 @@ JA joystick (active-low, switch to GND):
 | btnU/btnL/btnR/btnD | `btnU/L/R/D` | declared, unused (reserved) |
 | sw(15) | `O_PMODAMP2_GAIN` | AMP gain: 0 = 12 dB, 1 = 6 dB |
 | sw(14) | `O_PMODAMP2_SHUTD` | AMP shutdown: 0 = off, 1 = on |
-| JC1 / JC3 | `ps2_dat` (JC(0)) / `ps2_clk` (JC(2)) | PS/2 keyboard |
+| JB1 / JB3 | `ps2_dat` / `ps2_clk` | PS/2 keyboard |
 | JA1-JA4, JA7 | `JA(0..4)` | joystick (active-low) |
-| JB (PmodAMP2) | `O_PMODAMP2_AIN` | PWM audio (left channel) |
+| JC (PmodAMP2) | `O_PMODAMP2_AIN` | PWM audio (left channel; JC1=AIN, JC2=GAIN, JC4=SHUTD) |
 | VGA | `vgaRed/vgaGreen/vgaBlue(3:0)`, `vgaHsync`, `vgaVsync` | 4-4-4 RGB, 31 kHz |
 | LEDs | `led(15:0)` | present |
 

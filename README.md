@@ -6,14 +6,58 @@ to the **Basys 3 (Artix-7)** trainer board.
 The converted projects will be created in this directory, alongside the
 upstream source archives and any conversion tooling.
 
+## Status
+
+Porting progress is deliberately **not tracked in this repository** (see
+`AGENTS.md`). All ports are work-in-progress and the state of this tree changes
+— and can appear to regress — as work proceeds; don't treat any status
+statement in these docs as current.
+
+By default, **no git history is read** — not to restore artifacts and not even
+to peek at a previous port. A port regeneration is completely from scratch and
+depends only on information derived from the readmes (this file and the
+per-game `README.md`s). Even when a game's `basys3/` tree exists in git history,
+never `git checkout` it and never read its files out of history — reconstruct
+the port from the documented procedure and wiring.
+
+## Cleanroom sourcing
+
+The ports are built cleanroom: the only user-supplied input is the copyrighted
+MAME ROM set (never committed, never fetched from a repository). Every other
+file a port needs must be present in this repo, either:
+
+- vendored from the Dar archives in `downloads/` (unzipped in-tree by
+  `unzip_darfpga.sh`), or
+- a copy obtained from an external project (e.g. the DECA `vga_scandoubler.v`).
+
+Any file copied from an external project must be **committed into this repo**
+and its origin documented (URL + revision) in the per-game `README.md`. Never
+link files from external projects by path, never fetch them at build time, and
+never read them unless explicitly instructed — keep the sources self-contained.
+
+### Repository hygiene
+
+- MAME ROMs stay gitignored (enforced); the generated PROM VHDL (`*.vhd`) is
+  re-included by `.gitignore` as a convention, so it shows as untracked — never
+  `git add .` / `git add -A` (it would stage it); stage only the specific files
+  intended.
+- The `.gitignore` negations are generic (`**/vhdl_*/*` with `!**` re-includes
+  for `tools/`, `tools/*_unzip/`, the `make_*_proms.sh` scripts, the `basys3/`
+  port dirs, and generated `*.vhd`), so a new game needs no `.gitignore` edits.
+- Vivado build junk is only partially ignored: `*.jou`, `*.log`, `*.str`,
+  `*.wdb` match, but the dir patterns `**/.runs/` etc. do NOT match Vivado
+  2020.2's `<proj>.runs`-style names — so a game's `<proj>.{runs,cache,hw}`
+  build tree (and `.sim/` once a simulation has run) shows as untracked. Don't
+  try to clean it; just never stage it.
+
 ## Contents
 
-- `download_darfpga.sh` — downloads the 10 DarFPGA source archives used by the
+- `download_darfpga.sh` — downloads the DarFPGA source archives used by the
   ports (see below).
 - `unzip_darfpga.sh` — unzips each archive into its machine's project directory
   and applies that machine's fix patch where one exists (see below).
 - `downloads/` — the downloaded `vhdl_<game>_rev_*.zip` archives.
-- 10 per-machine project directories (`Bagman-FPGA-Dar/` … `Time-Pilot-by-Dar/`)
+- Per-machine project directories (`Bagman-FPGA-Dar/` … `Time-Pilot-by-Dar/`)
   — each holding its machine's `readme-dar.txt` (see below), a `README.md`
   documenting that port's IO mapping, features supported, and required MAME ROM
   set, any `<game>_*.patch` fix for pristine Dar sources, and the upstream
@@ -44,6 +88,10 @@ Run:
 ./download_darfpga.sh --force    # re-download everything
 ```
 
+An optional positional `OUTDIR` defaults to `<script dir>/downloads`. Each
+download is verified as a real zip (the `PK` magic header), so SourceForge HTML
+error pages are rejected and removed rather than being mistaken for archives.
+
 ## Unzipping the sources
 
 `unzip_darfpga.sh` maps each zip in `downloads/` to its machine's project
@@ -59,6 +107,9 @@ given:
 ./unzip_darfpga.sh --force    # re-unzip everything and re-apply patches
 ```
 
+The script's `GAMES` array is the authoritative game-dir ↔ zip ↔ patch mapping
+— don't guess dir names from the tree.
+
 ## Per-machine project directories
 
 Each zip maps to a project directory named after its machine (e.g.
@@ -67,13 +118,14 @@ Each zip maps to a project directory named after its machine (e.g.
 `https://sourceforge.net/projects/darfpga/files/Software%20VHDL/<sf_folder>/README.txt/download`,
 a `README.md` describing the Basys 3 port: IO mapping, features supported, and
 the MAME ROM set(s) required, and the upstream sources under
-`vhdl_<game>_rev_<...>/` (extracted by `unzip_darfpga.sh`). Machines whose
+`vhdl_<game>_rev_<...>/` (extracted by `unzip_darfpga.sh`). Each machine's
+`README.md` is the source of truth for its wiring (IO mapping). Machines whose
 pristine sources need fixing (Bagman, Berzerk, Galaga, Pooyan, Popeye) also
 carry a `<game>_*.patch`; how to apply and verify it is described in that
 machine's `README.md`.
 
 Gotcha: Galaga's upstream file is named `README.TXT` (uppercase) — save it as
-`readme-dar.txt` for consistency with the other nine.
+`readme-dar.txt` for consistency with the other games.
 
 ## How the projects are ported to the Basys 3
 
@@ -149,9 +201,10 @@ that project's `README.md`.
 
 ## Creating the porting artifacts (per machine)
 
-None of the artifacts below exist in the tree yet; each machine's port is
-produced in this order. The machine's `README.md` documents its exact ROM sets,
-wrapper ports, and generated PROM file names.
+Porting is work-in-progress and deliberately not tracked here — see the
+**Status** note at the top. Each machine's port is produced in this order. The
+machine's `README.md` documents its exact ROM sets, wrapper ports, and
+generated PROM file names.
 
 > **Build prerequisite — do step 1 first.** Every core instantiates the
 > generated PROM VHDL files (`*_prog.vhd`, `*_grphx*.vhd`, `*_palette*.vhd`) by
@@ -166,7 +219,7 @@ wrapper ports, and generated PROM file names.
 Unzip the required MAME ROM set(s) into
 `vhdl_<game>_rev_<...>/tools/<game>_unzip/`, then run the PROM generator there.
 
-`make_<game>_proms.sh` does not exist yet — it is a port of the Dar
+`make_<game>_proms.sh` is a port of the Dar
 `make_<game>_proms.bat` that ships in the archive. The `.bat` only concatenates
 ROM binaries (`copy /B a+b c.bin`) and calls `make_vhdl_prom in.bin out.vhd`;
 the `.sh` is a mechanical translation (`cat`/`rm`) that emits the
@@ -176,9 +229,16 @@ ROMs. The shipped `tools/tools_prom_src/binaries/linux32/make_vhdl_prom` is a
 (`/lib/ld-linux.so.2`) — rebuild it first from
 `tools/tools_prom_src/src/make_vhdl_prom.c`: `gcc make_vhdl_prom.c -lm` (build
 commands in `src/doc_compilation.txt`; no `.bat` uses `duplicate_byte`). The
-reference port ships a rebuilt 64-bit binary next to its `.sh`. The Vivado
+Vivado
 project references these files in place, so this step must precede project
 assembly and is the only ROM-dependent build prerequisite.
+
+For a game whose `make_<game>_proms.sh` does not yet exist, creating it is a
+prerequisite of this step — a mechanical translation of the shipped
+`make_<game>_proms.bat` (`cat`-concat the ROMs + one `make_vhdl_prom` call per
+output VHD), run from the game's own `tools/<game>_unzip/` dir. Machine-specific
+details (which input ROM files feed which output VHD) follow the game's `.bat`
+and are captured in that machine's `README.md` as needed.
 
 Game ROMs and the generated PROM VHDL are copyrighted — never commit or
 redistribute them.
@@ -206,6 +266,11 @@ drive `enable_scandoubling` from the wrapper's `tv15Khz_mode` switch — the
 module's `'0'` state IS the 15 kHz bypass (`hsync <= csync`), so no extra
 muxing is needed.
 
+Gotcha: Vivado 2020.2 mixed-language elaboration cannot resolve bare `'1'`/`'0'`
+literals mapped to the Verilog `input wire` ports (`enable_scandoubling`,
+`disable_scaneffect`) — it fails with `Synth 8-2396: near character '1' ; 3
+visible types match here`; use qualified literals `std_logic'('1')` there.
+
 ### 5. Create the XDC constraints
 
 Start from the Digilent `Basys-3-Master.xdc` and trim it to the wrapper's ports
@@ -227,3 +292,7 @@ then synthesize in Vivado 2020.2. A machine with no patch yet (Burnin' Rubber,
 Kick, Sky Skipper, Solar Fox, Time Pilot) is expected to hit synthesis issues
 similar to the fixed ones — resolve them the same way: minimal patch plus a grep
 verification line added to its `README.md`.
+
+There is no CI/build/lint tooling in this repo — the only verification is the
+grep line above and running `download_darfpga.sh` / `unzip_darfpga.sh`. Don't
+invent test commands.
