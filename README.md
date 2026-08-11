@@ -91,9 +91,9 @@ DE10-Lite keys are active-low (`reset <= not key(0)`); Basys 3 buttons are activ
 
 **3. I/O remapping**
 The same machine signals are wired to Basys 3 PMODs instead of MAX 10 GPIO, following a consistent scheme across every port:
-- PS/2 keyboard on **JC** (JC1 = `ps2_data`, JC3 = `ps2_clk`) via the unchanged `io_ps2_keyboard` scancode decoder + `kbd_joystick` scancode→button mapper (note: the specific F-key bindings differ per machine).
+- PS/2 keyboard on **JB** (JB1 = `ps2_dat`, JB3 = `ps2_clk`) via the unchanged `io_ps2_keyboard` scancode decoder + `kbd_joystick` scancode→button mapper (note: the specific F-key bindings differ per machine).
 - **JA** joystick (active-low, switch to GND) OR-merged into the same `joyPCFRLDU` bus, with combo presses (e.g. Fire+Up = Coin, Fire+Left = Start 1) decoded in the wrapper.
-- Audio on **PmodAMP2** (JB): the core's digital `audio_out` feeds a PWM accumulator (same technique as the DE10-Lite) whose MSB drives `AIN`; `sw(15)`/`sw(14)` control AMP gain/shutdown.
+- Audio on **PmodAMP2** (JC: JC1 = `AIN`, JC2 = `GAIN`, JC4 = `SHUTD`): the core's digital `audio_out` feeds a PWM accumulator (same technique as the DE10-Lite) whose MSB drives `AIN`; `sw(15)`/`sw(14)` control AMP gain/shutdown.
 
 **4. Video — making 15 kHz timing display on a VGA monitor**
 The cores output ~15 kHz timing with composite sync, which modern VGA monitors reject. Two solutions are used:
@@ -194,7 +194,7 @@ MHz), matching the DE10-Lite PLL frequencies exactly. It lives at
 
 Copy the DE10-Lite wrapper and apply the substitutions from the porting
 strategy above: Xilinx `clk_wiz_0` in place of the Altera PLL, `reset <= btnC`
-(active-high), PS/2 on JC1/JC3, JA joystick, PWM audio on JB, VGA output, and
+(active-high), PS/2 on JB1/JB3, JA joystick, PWM audio on JC, VGA output, and
 the `tv15Khz_mode` wiring per the machine's row in the video status table.
 
 ### 4. Import the scandoubler

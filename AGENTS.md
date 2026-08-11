@@ -32,26 +32,57 @@ Target toolchain: Vivado 2020.2.
 - `.gitignore` — enforces the copyright rules: `**/vhdl_*/*` ignores the whole
   Dar source tree (incl. staged MAME ROMs and shipped tool binaries), then
   negations re-include `tools/`, `tools/*_unzip/`, the `make_*_proms.sh` scripts,
-  and generated PROM VHDL (`*.vhd`). A new `make_<game>_proms.sh` needs the same
+  each game's `basys3/` port dir, and generated PROM VHDL (`*.vhd`). A new
+  `make_<game>_proms.sh` or a new game's `basys3/` tree needs the same
   `!`-negation pattern (parent dirs must be re-included before the file).
+  Vivado build junk is only partially ignored: the file patterns `*.jou`,
+  `*.log`, `*.str`, `*.wdb` work (runme.log / vivado.jou stay hidden), but the
+  dir patterns `**/.runs/`, `**/.cache/`, `**/.gen/`, `**/.hw/`, `**/.sim/`,
+  `**/.ip_user_files/` do NOT match Vivado 2020.2's `<proj>.runs`-style dir
+  names — so Pooyan's whole `pooyan_basys3.{runs,cache,hw,sim}` build tree
+  shows as untracked in `git status` (~100 files). Don't try to clean it; just
+  never `git add .` / `-A` (see Rules).
 
 ## Porting status
 
-Per-game `README.md`s describe the *target* port. Only Pooyan has artifacts in
-the tree so far, and only partial:
+Per-game `README.md`s describe the *target* port. Pooyan is fully ported,
+assembled, and built — synthesis and implementation both complete and a
+bitstream exists (below). The other 9 games have nothing:
 
-- Pooyan: the `clk_wiz_0` MMCM IP (100 MHz → 12.288 + 14.318 MHz) exists as two
-  `.v` files at `Pooyan-by-Dar/vhdl_pooyan_rev_0_2_2020_04_26/basys3/
-  pooyan_basys3/pooyan_basys3.srcs/sources_1/imports/clk_wiz_0/` (under the
-  vhdl tree, so gitignored). MAME ROMs are staged in `tools/pooyan_unzip/` and
-  the `make_pooyan_proms.sh` + rebuilt 64-bit `make_vhdl_prom` sit next to
-  them. Still missing: generated PROM VHDL (the `.sh` exists but has NOT been
-  run — no `*.vhd` outputs yet), `.xpr`, `pooyan_basys3.vhd` wrapper, XDC,
-  scandoubler import. The other 9 games have no project artifacts at all.
-- Everything Pooyan-ish is gitignored (`**/vhdl_*/*`) except
-  `make_pooyan_proms.sh` — so the MMCM IP, the staged ROMs, and the rebuilt
-  binary never appear in `git status`; check the filesystem, not git status,
-  to see them.
+- Pooyan: all 7 port steps are done in-tree under
+  `Pooyan-by-Dar/vhdl_pooyan_rev_0_2_2020_04_26/basys3/pooyan_basys3/`:
+  - `pooyan_basys3.xpr` (Vivado 2020.2, part xc7a35tcpg236-1, top
+    `pooyan_basys3`) referencing the core RTL in `rtl_dar/`, `rtl_t80_350/`,
+    `rtl_mikej/` and the generated PROM VHDs in `tools/pooyan_unzip/` in place.
+  - `pooyan_basys3.srcs/sources_1/new/pooyan_basys3.vhd` — the top wrapper
+    (100 MHz → clk_wiz_0 MMCM → 12.288/14.318 MHz, active-high btnC reset gated
+    on `locked`, DECA scandoubler, PS/2 on JB1/JB3, JA joystick, PmodAMP2 PWM).
+  - `pooyan_basys3.srcs/sources_1/imports/clk_wiz_0/` — MMCM IP (2 `.v` files).
+  - `pooyan_basys3.srcs/sources_1/imports/deca/vga_scandoubler.v`.
+  - `pooyan_basys3.srcs/constrs_1/imports/digilent-xdc-master/pooyan_basys3.xdc`.
+  - `make_pooyan_proms.sh` HAS been run — all 9 generated PROM VHDs exist in
+    `tools/pooyan_unzip/` (gitignored-but-unignored via `!*.vhd`; never commit).
+    The staged MAME ROMs (`1.4a`…`8.10g`, `pooyan.pr1-3`, `xx.7a/8a`) and the
+    rebuilt 64-bit `make_vhdl_prom` sit in the same dir.
+  - Synthesis + implementation COMPLETE: `pooyan_basys3.bit` is built in
+    `pooyan_basys3.runs/impl_1/` (logs in `pooyan_basys3.runs/synth_1/runme.log`
+    and `.../impl_1/runme.log`). An earlier run failed RTL elaboration with 3×
+    `Synth 8-2396: near character '1' ; 3 visible types match here` at
+    `pooyan_basys3.vhd:192`/`:193` — bare `'1'` literals mapped to
+    `vga_scandoubler`'s Verilog `enable_scandoubling` / `disable_scaneffect`
+    `input wire` ports. Vivado 2020.2 mixed-language elaboration can't resolve
+    the literal's type (bit / std_logic / std_ulogic); the wrapper now maps
+    qualified literals `std_logic'('1')` there, which fixed it. The
+    `Synth 8-1565` warnings about `start2/start1/coin1` are benign.
+- The other 9 games have no port artifacts at all: their `tools/<game>_unzip/`
+  dirs hold only the upstream `make_<game>_proms.bat` + shipped Windows
+  `make_vhdl_prom.exe` (gitignored) — no staged ROMs, no `.sh`, no MMCM.
+- Almost everything Pooyan-ish is gitignored (`**/vhdl_*/*`): the staged MAME
+  ROMs and the rebuilt `make_vhdl_prom` binary never appear in `git status` —
+  check the filesystem, not git status, to see them. The un-ignored `basys3/`
+  port tree (incl. the `clk_wiz_0` MMCM IP and `vga_scandoubler.v`) shows up as
+  untracked; only `make_pooyan_proms.sh` is actually git-tracked (see
+  `.gitignore` negations).
 - **Generated PROM VHDs under `tools/<game>_unzip/` will show as untracked**
   in `git status` when produced (the `!*.vhd` gitignore negation) — never
   commit them (see Rules).
@@ -62,8 +93,10 @@ the tree so far, and only partial:
   `make_vhdl_prom` call per output VHD), run from its own dir. (The main
   README's "does not exist yet" is stale for Pooyan.)
 - `make_vhdl_prom` must be rebuilt into `tools/<game>_unzip/` from
-  `tools/tools_prom_src/src/make_vhdl_prom.c` with `gcc make_vhdl_prom.c -lm`
-  (no `.bat` uses `duplicate_byte`): the shipped
+  `tools/tools_prom_src/src/make_vhdl_prom.c` — note `tools/` here is INSIDE
+  each `vhdl_<game>_rev_*/` tree, not at the repo root — with
+  `gcc make_vhdl_prom.c -lm` (no `.bat` uses `duplicate_byte`; build commands
+  in `src/doc_compilation.txt`). The shipped
   `tools/tools_prom_src/binaries/linux32/make_vhdl_prom` is a 32-bit ELF that
   will NOT run on a 64-bit host without a 32-bit loader (`/lib/ld-linux.so.2`).
   Pooyan's rebuilt 64-bit copy is already in place next to its `.sh`.
@@ -83,7 +116,7 @@ the tree so far, and only partial:
   <= btnC`), pin remap, XDC constraints, and a scandoubler to lift 15 kHz
   arcade timing to 31 kHz VGA.
 - The per-game `README.md` is the source of truth for wiring; ports wire PS/2
-  on JC1/JC3 and audio on JB (PmodAMP2).
+  on JB1/JB3 and audio on JC (PmodAMP2, JC1 = AIN / JC2 = GAIN / JC4 = SHUTD).
 - 15 kHz video: every Dar core produces native 15 kHz + `csync`; cores with
   `tv15Khz_mode` scan-double internally (Bagman, Berzerk, Kick, Popeye,
   Sky Skipper, Solar Fox), the rest need the external scandoubler bypassed
