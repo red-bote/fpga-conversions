@@ -45,6 +45,14 @@ infer anything you need from the tree itself.
   missing entities without them. `tools/` lives inside each `vhdl_<game>_rev_*/`
   tree, not at the repo root; the shipped `make_vhdl_prom` is a 32-bit ELF that
   must be rebuilt on a 64-bit host (`gcc make_vhdl_prom.c -lm`).
+- Mixed-language gotcha (scandoubler games): wiring a Verilog module's input
+  ports with bare `'1'`/`'0'` literals fails Vivado 2020.2 elaboration with
+  `Synth 8-2396` ("3 visible types match here") — use qualified literals
+  `std_logic'('1')` for `enable_scandoubling` / `disable_scaneffect`.
+- Project/top naming isn't uniform: most games use `basys3/<game>_basys3.xpr`
+  (top `<game>_basys3`), but Kick's is `basys3/kickman_basys.xpr` (top
+  `kickman_basys3`, no trailing "3") and Berzerk/Popeye use `rtl_top` in
+  `<game>_xc7/` — check the game's `README.md` before assembling or verifying.
 
 ## Verification
 
@@ -59,3 +67,8 @@ don't invent test or build commands.
 - MAME ROMs and the generated PROM VHDL are copyrighted — never commit or
   stage them. Generated `*.vhd` under `tools/<game>_unzip/` shows as untracked
   by design; leave it unstaged.
+- Vivado build junk is only partially ignored: `**/.runs/` etc. do NOT match
+  Vivado 2020.2's `<proj>.{runs,cache,hw}` dirs, so a synthesized game shows
+  these as untracked (plus `.sim/` after a simulation). Don't clean them or
+  extend `.gitignore` — the negations are tuned on purpose; just never stage
+  them.

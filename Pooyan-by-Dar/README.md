@@ -103,6 +103,9 @@ redistribute them.
 - `vga_scandoubler.v` is self-contained (its `vgascanline_dport` and
   `color_dimmed` submodules are in the same file) — importing that one file is
   enough.
+- `vga_scandoubler.v` is a cleanroom import (origin URL above) — modifying it
+  is off limits; keep it byte-for-byte as imported. Any behavioral change goes
+  in the `pooyan_basys3.vhd` wrapper instead.
 - Keep the keyboard decoder on `clock_6` (the wrapper's divide-by-2 of
   `clock_12`, as in the DE10 wrapper) so `io_ps2_keyboard`/`kbd_joystick` run on
   the core's synchronous clock.
