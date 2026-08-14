@@ -28,10 +28,10 @@ Dar release notes.
   `video_hs`/`video_vs`/`video_csync` (all active-low) are wired to toplevel
   `hsync`/`vsync`/`csync` signals feeding the scandoubler's
   `hsync_ext_n`/`vsync_ext_n`/`csync_ext_n` inputs, and the scandoubler's
-  `hsync`/`vsync` outputs drive the toplevel `vgaHsync`/`vgaVsync` ports (the
-  Hsync/Vsync pins in `pooyan_basys3.xdc`, trimmed from the Digilent
+  `hsync`/`vsync` outputs drive the toplevel `vga_hs`/`vga_vs` ports (the
+  Hsync/Vsync pins in `pooyan_basys3.xdc`, generated from the Digilent
   Basys-3-Master.xdc at
-  <https://github.com/Digilent/Basys3/blob/master/Resources/XDC/Basys-3-Master.xdc>).
+  <https://github.com/Digilent/digilent-xdc/blob/master/Basys-3-Master.xdc>).
 - **Sound**: mono PWM audio on PmodAMP2 (JC header).
 - **Controls**: PS/2 keyboard + JA joystick (OR-merged), btnC = reset.
 
@@ -50,16 +50,47 @@ JA joystick (active-low, switch to GND):
 
 ## IO mapping
 
-| Basys 3 resource | Wrapper port | Function |
-|------------------|--------------|----------|
-| clk (W5, 100 MHz) | `clk` | clock into `clk_wiz_0` MMCM |
-| btnC | `btnC` | reset (active-high) |
-| sw(15) | `O_PMODAMP2_GAIN` | AMP gain: 0 = 12 dB, 1 = 6 dB |
-| sw(14) | `O_PMODAMP2_SHUTD` | AMP shutdown: 0 = off, 1 = on |
-| JB1 / JB3 | `ps2_dat` / `ps2_clk` (dedicated ports) | PS/2 keyboard |
-| JA1-JA4, JA7 | `JA(0..4)` | joystick (active-low) |
-| JC (PmodAMP2) | `O_PMODAMP2_AIN` | PWM audio (JC1=AIN, JC2=GAIN, JC4=SHUTD) |
-| VGA | `vgaRed/vgaGreen/vgaBlue(3:0)`, `vgaHsync`, `vgaVsync` | 4-4-4 RGB, 31 kHz |
+| Port | Dir | Width | Pins | Function |
+|------|-----|-------|------|----------|
+| clk | in | 1 | W5 | clock into `clk_wiz_0` MMCM (100 MHz) |
+| btnC | in | 1 | U18 | reset (active-high) |
+| sw | in | 16 | V17;V16;W16;W17;W15;V15;W14;W13;V2;T3;T2;R3;W2;U1;T1;R2 | switches; sw(15)/sw(14) drive AMP gain/shutdown |
+| ps2_dat | in | 1 | A14 | PS/2 keyboard data (JB1) |
+| ps2_clk | in | 1 | B15 | PS/2 keyboard clock (JB3) |
+| JA | in | 5 | J1;L2;J2;G2;H1 | joystick (active-low, PULLUP true) |
+| O_PMODAMP2_AIN | out | 1 | K17 | PWM audio (JC1) |
+| O_PMODAMP2_GAIN | out | 1 | M18 | AMP gain: 0 = 12 dB, 1 = 6 dB (JC2) |
+| O_PMODAMP2_SHUTD | out | 1 | P18 | AMP shutdown: 0 = off, 1 = on (JC4) |
+| vga_r | out | 4 | G19;H19;J19;N19 | VGA Red 4-bit |
+| vga_g | out | 4 | J17;H17;G17;D17 | VGA Green 4-bit |
+| vga_b | out | 4 | N18;L18;K18;J18 | VGA Blue 4-bit |
+| vga_hs | out | 1 | P19 | VGA Hsync |
+| vga_vs | out | 1 | R19 | VGA Vsync |
+
+## Wiring facts
+
+| Fact | Value |
+|------|-------|
+| clk_wiz.input | 100.000 |
+| clk_wiz.out1 | 12.288 |
+| clk_wiz.out2 | 14.318 |
+| clk_wiz.out1_signal | clock_12 |
+| clk_wiz.out2_signal | clock_14 |
+| scandoubler.clkvga | clock_12 |
+| scandoubler.clkvideo | clock_6 |
+| kbd_clk | clock_6 |
+| pwm_clk | clock_14 |
+| scandoubler.rgb_width | 6 |
+| rgb_vga | 4 |
+| dip_switch_1 | FF |
+| dip_switch_2 | 7F |
+| scandoubler.enable | 1 |
+| scandoubler.scaneffect | 1 |
+| amp.gain_from | sw(15) |
+| amp.shutdown_from | sw(14) |
+| rgb_core | 3;3;2 |
+| video_clk | open |
+| ja.pullup | 1 |
 
 ## ROM set required
 
