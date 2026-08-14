@@ -45,6 +45,10 @@
 # Run with CWD=/tmp so the vivado.log / vivado.jou that Vivado writes to the
 # launch directory land outside the repo:
 #   cd /tmp && /path/to/create_project.sh
+#
+# --stage-roms: only ensure the Dar source tree (extract + fix patch) and
+# stage the ROMs + generate the PROM VHDL in tools/pooyan_unzip/; skips
+# everything that needs Vivado, so no CWD=/tmp requirement.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
@@ -71,6 +75,16 @@ rom_files=(
 )
 
 die() { echo "error: $*" >&2; exit 1; }
+
+# --stage-roms: rom-setup-only mode (see header). Keeps the ROM pipeline
+# (ensure_dar_source + run_proms) invokable without a Vivado install.
+STAGE_ROMS_ONLY=0
+for arg in "$@"; do
+  case "$arg" in
+    --stage-roms) STAGE_ROMS_ONLY=1 ;;
+    *) die "unknown argument: $arg" ;;
+  esac
+done
 
 # Source-of-truth data parsed from Pooyan-by-Dar/README.md: the IO mapping
 # table (one row per wrapper port) and the Wiring facts table (key/value).
@@ -225,6 +239,7 @@ ensure_make_pooyan_proms_sh() {
   local bat="$PROM_DIR/make_pooyan_proms.bat"
   if [[ -f "$sh" ]] && ! grep -q $'\r' "$sh"; then
     echo "build   make_pooyan_proms.sh present"
+    chmod +x "$sh"
     return
   fi
   if [[ -f "$sh" ]]; then
@@ -634,6 +649,14 @@ EOF
 
   "$VIVADO" -mode batch -source "$tclfile"
 }
+
+if [[ $STAGE_ROMS_ONLY -eq 1 ]]; then
+  ensure_dar_source
+  run_proms
+  chmod +x "$PROM_DIR/make_pooyan_proms.sh"
+  echo "roms    staged: $PROM_DIR (${#prom_files[@]} PROM VHDL generated)"
+  exit 0
+fi
 
 resolve_vivado
 parse_readme

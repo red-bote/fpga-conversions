@@ -12,12 +12,14 @@
 
 ## Filesystem scope
 
-- Do not read anything outside this repository directory (no sibling or backup
-  checkouts such as `fpga-conversions.bak/`, nothing under `$HOME`, no symlinked
-  locations). Diagnose and reason only from files inside the repo.
+- Do not read anything outside this repository directory without explicit
+  permission (no sibling or backup checkouts,
+  nothing under `$HOME`, no symlinked locations). Diagnose and reason only from
+  files inside the repo.
 - Exceptions (documented elsewhere in these rules): `/tmp` (scratch, and the
   Vivado build scripts that run from `/tmp`), `~/roms/` (`ROMZIP`), and the
-  `ENV_VAR` paths from the tool resolution rule (`VIVADO`, `DARZIP`).
+  `ENV_VAR` paths from the tool resolution rule (`VIVADO`, `DARZIP`). Anything
+  else outside the repo requires the user's explicit permission.
 
 ## Documentation scope (AGENTS.md)
 
