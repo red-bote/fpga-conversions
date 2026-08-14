@@ -26,7 +26,7 @@ The ports are built cleanroom: the only user-supplied input is the copyrighted
 MAME ROM set (never committed, never fetched from a repository). Every other
 file a port needs must be present in this repo, either:
 
-- vendored from the Dar archives in `downloads/` (unzipped in-tree by
+- vendored from the Dar archives in the archive directory (unzipped in-tree by
   `unzip_darfpga.sh`), or
 - a copy obtained from an external project (e.g. the DECA `vga_scandoubler.v`).
 
@@ -56,7 +56,8 @@ never read them unless explicitly instructed — keep the sources self-contained
   ports (see below).
 - `unzip_darfpga.sh` — unzips each archive into its machine's project directory
   and applies that machine's fix patch where one exists (see below).
-- `downloads/` — the downloaded `vhdl_<game>_rev_*.zip` archives.
+- the archive directory — the downloaded `vhdl_<game>_rev_*.zip` archives
+  (owned by `download_darfpga.sh`, see below).
 - Per-machine project directories (`Bagman-FPGA-Dar/` … `Time-Pilot-by-Dar/`)
   — each holding its machine's `readme-dar.txt` (see below), a `README.md`
   documenting that port's IO mapping, features supported, and required MAME ROM
@@ -84,17 +85,25 @@ The archives come from
 Run:
 
 ```bash
-./download_darfpga.sh            # downloads into ./downloads/, skips existing
+./download_darfpga.sh            # downloads all into the archive directory, skips existing
 ./download_darfpga.sh --force    # re-download everything
+./download_darfpga.sh Pooyan     # only the matching machine (case-insensitive glob)
+./download_darfpga.sh 'B*'       # bagman, berzerk, burnin_rubber
 ```
 
-An optional positional `OUTDIR` defaults to `<script dir>/downloads`. Each
-download is verified as a real zip (the `PK` magic header), so SourceForge HTML
-error pages are rejected and removed rather than being mistaken for archives.
+`download_darfpga.sh` owns the archive directory:
+`./download_darfpga.sh --print-dir` resolves it (override the default with the
+`OUTDIR` environment variable), and `unzip_darfpga.sh` queries that, so the
+directory is specified in exactly one place. An optional
+`NAME`/`GLOB`
+argument restricts the run to the matching machine names (case-insensitive);
+with no match the script errors out listing the valid names. Each download is
+verified as a real zip (the `PK` magic header), so SourceForge HTML error pages
+are rejected and removed rather than being mistaken for archives.
 
 ## Unzipping the sources
 
-`unzip_darfpga.sh` maps each zip in `downloads/` to its machine's project
+`unzip_darfpga.sh` maps each zip in the archive directory to its machine's project
 directory (e.g. `vhdl_kick_rev_*` → `Kick-Midway-MCR-by-Dar/`) and unzips it
 there, preserving the archive's top-level `vhdl_<game>_rev_<...>/` folder. When
 that machine has a fix patch (Bagman, Berzerk, Galaga, Pooyan, Popeye), it is

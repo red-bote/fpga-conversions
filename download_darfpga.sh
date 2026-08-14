@@ -1,12 +1,17 @@
 #!/usr/bin/env bash
-# Download the DarFPGA (darfpga) source archives for the arcade games ported
-# in this workspace, from:
+# Download the DarFPGA (darfpga) source archives for the machines ported in
+# this workspace, from:
 #   https://sourceforge.net/projects/darfpga/files/Software%20VHDL/
 #
 # Usage:
-#   ./download_darfpga.sh [OUTDIR]
-# Default OUTDIR is "<script dir>/downloads". Existing files are skipped
-# unless --force is given.
+#   ./download_darfpga.sh [--force] [NAME|GLOB]
+#   ./download_darfpga.sh --print-dir
+# This script owns the archive directory: by default "<script dir>/dloads",
+# overridable with the OUTDIR environment variable. unzip_darfpga.sh queries
+# that directory with --print-dir, so it is always specified here and only
+# here. With no NAME argument all machines are processed; otherwise NAME is a
+# case-insensitive glob matched against the machine names below. Existing
+# files are skipped unless --force is given.
 set -euo pipefail
 
 BASE="https://sourceforge.net/projects/darfpga/files/Software%20VHDL"
@@ -26,12 +31,19 @@ PROJECTS=(
 )
 
 FORCE=0
+FILTER="*"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-OUTDIR="$SCRIPT_DIR/downloads"
+OUTDIR="${OUTDIR:-$SCRIPT_DIR/dloads}"
+NAMES=""
+for entry in "${PROJECTS[@]}"; do
+  IFS='|' read -r name _ _ <<< "$entry"
+  NAMES="$NAMES $name"
+done
 for arg in "$@"; do
   case "$arg" in
     --force) FORCE=1 ;;
-    *) OUTDIR="$arg" ;;
+    --print-dir) echo "$OUTDIR"; exit 0 ;;
+    *) FILTER="$(printf '%s' "$arg" | tr '[:upper:]' '[:lower:]')" ;;
   esac
 done
 mkdir -p "$OUTDIR"
@@ -40,8 +52,14 @@ command -v curl >/dev/null 2>&1 || { echo "error: curl not found" >&2; exit 1; }
 
 ok=0
 fail=0
+matched=0
 for entry in "${PROJECTS[@]}"; do
   IFS='|' read -r name sf_folder zip <<< "$entry"
+  case "$name" in
+    $FILTER) ;;
+    *) echo "skip   $name (does not match '$FILTER')"; continue ;;
+  esac
+  matched=$((matched + 1))
   url="$BASE/$sf_folder/$zip/download"
   dest="$OUTDIR/$zip"
 
@@ -70,6 +88,12 @@ for entry in "${PROJECTS[@]}"; do
   fi
 done
 
+if [[ $matched -eq 0 ]]; then
+  echo "error: '$FILTER' matches no machine names" >&2
+  echo "machines:$NAMES" >&2
+  exit 1
+fi
+
 echo "----------------------------------------"
-echo "downloaded/skipped: $ok, failed: $fail"
+echo "matched: $matched, downloaded/skipped: $ok, failed: $fail"
 [[ $fail -eq 0 ]]

@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
-# Unzip the DarFPGA archives from downloads/ into their per-game directories
+# Unzip the DarFPGA archives into their per-game directories
 # and apply each game's fix patch (where one exists).
 #
 # Usage:
-#   ./unzip_darfpga.sh [--force] [ZIPDIR]
-# Default ZIPDIR is "<script dir>/downloads". Existing unzipped trees are
-# skipped unless --force is given; patches use -N so an already-applied patch
-# is detected and skipped rather than failing.
+#   ./unzip_darfpga.sh [--force] [ARCHIVE_DIR]
+# ARCHIVE_DIR is the directory holding the downloaded Dar archives. Its
+# default is queried from download_darfpga.sh --print-dir, the single source
+# of truth for the directory; a positional ARCHIVE_DIR still wins. Existing
+# unzipped trees are skipped unless --force is given; patches use -N so an
+# already-applied patch is detected and skipped rather than failing.
 set -euo pipefail
 
 # game_dir|zip_file|fix_patch (patch may be empty)
@@ -25,13 +27,16 @@ GAMES=(
 
 FORCE=0
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ZIPDIR="$SCRIPT_DIR/downloads"
+ARCHIVE_DIR=""
 for arg in "$@"; do
   case "$arg" in
     --force) FORCE=1 ;;
-    *) ZIPDIR="$arg" ;;
+    *) ARCHIVE_DIR="$arg" ;;
   esac
 done
+if [[ -z "$ARCHIVE_DIR" ]]; then
+  ARCHIVE_DIR="$(bash "$SCRIPT_DIR/download_darfpga.sh" --print-dir)"
+fi
 
 command -v unzip >/dev/null 2>&1 || { echo "error: unzip not found" >&2; exit 1; }
 command -v patch >/dev/null 2>&1 || { echo "error: patch not found" >&2; exit 1; }
@@ -41,12 +46,12 @@ skip=0
 fail=0
 for entry in "${GAMES[@]}"; do
   IFS='|' read -r game zip patch <<< "$entry"
-  zipfile="$ZIPDIR/$zip"
+  zipfile="$ARCHIVE_DIR/$zip"
   gamedir="$SCRIPT_DIR/$game"
   srcroot="$(basename "$zip" .zip)" # top-level dir the zip extracts to
 
   if [[ ! -s "$zipfile" ]]; then
-    echo "error: $zip not found in $ZIPDIR (run download_darfpga.sh?)" >&2
+    echo "error: $zip not found in $ARCHIVE_DIR (run download_darfpga.sh?)" >&2
     fail=$((fail + 1))
     continue
   fi
