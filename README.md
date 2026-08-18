@@ -17,9 +17,9 @@ other machines.
 
 Most other `<Machine>-by-Dar/` currently contain only their design `README.md`
 plus any synthesis-fix `*.patch`; the Dar source trees are fetched/extracted
-locally and are not checked in. `Time-Pilot-by-Dar/` is a scripted scaffold
-(Makefile + `contrib/` scripts + `PORTING_SPEC.md`) but is not yet a fully
-working port (no top-level wrapper, bitstream, or hardware verification yet).
+locally and are not checked in. `Time-Pilot-by-Dar/` is the second complete,
+fully-scripted, hardware-verified port (Makefile + `contrib/` scripts +
+`PORTING_SPEC.md`).
 
 ## Machine index
 

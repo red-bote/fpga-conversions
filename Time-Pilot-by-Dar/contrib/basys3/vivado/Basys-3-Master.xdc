@@ -64,7 +64,7 @@ set_property -dict { PACKAGE_PIN R2    IOSTANDARD LVCMOS33 } [get_ports {sw[15]}
 
 
 ##Buttons
-#set_property -dict { PACKAGE_PIN U18   IOSTANDARD LVCMOS33 } [get_ports btnC]
+set_property -dict { PACKAGE_PIN U18   IOSTANDARD LVCMOS33 } [get_ports btnC]
 #set_property -dict { PACKAGE_PIN T18   IOSTANDARD LVCMOS33 } [get_ports btnU]
 #set_property -dict { PACKAGE_PIN W19   IOSTANDARD LVCMOS33 } [get_ports btnL]
 #set_property -dict { PACKAGE_PIN T17   IOSTANDARD LVCMOS33 } [get_ports btnR]
@@ -72,18 +72,18 @@ set_property -dict { PACKAGE_PIN R2    IOSTANDARD LVCMOS33 } [get_ports {sw[15]}
 
 
 ##Pmod Header JA
-#set_property -dict { PACKAGE_PIN J1   IOSTANDARD LVCMOS33 } [get_ports {JA[0]}];#Sch name = JA1
-#set_property -dict { PACKAGE_PIN L2   IOSTANDARD LVCMOS33 } [get_ports {JA[1]}];#Sch name = JA2
-#set_property -dict { PACKAGE_PIN J2   IOSTANDARD LVCMOS33 } [get_ports {JA[2]}];#Sch name = JA3
-#set_property -dict { PACKAGE_PIN G2   IOSTANDARD LVCMOS33 } [get_ports {JA[3]}];#Sch name = JA4
-#set_property -dict { PACKAGE_PIN H1   IOSTANDARD LVCMOS33 } [get_ports {JA[4]}];#Sch name = JA7
+set_property -dict { PACKAGE_PIN J1   IOSTANDARD LVCMOS33  PULLUP true } [get_ports {JA[0]}];#Sch name = JA1
+set_property -dict { PACKAGE_PIN L2   IOSTANDARD LVCMOS33  PULLUP true } [get_ports {JA[1]}];#Sch name = JA2
+set_property -dict { PACKAGE_PIN J2   IOSTANDARD LVCMOS33  PULLUP true } [get_ports {JA[2]}];#Sch name = JA3
+set_property -dict { PACKAGE_PIN G2   IOSTANDARD LVCMOS33  PULLUP true } [get_ports {JA[3]}];#Sch name = JA4
+set_property -dict { PACKAGE_PIN H1   IOSTANDARD LVCMOS33  PULLUP true } [get_ports {JA[4]}];#Sch name = JA7
 #set_property -dict { PACKAGE_PIN K2   IOSTANDARD LVCMOS33 } [get_ports {JA[5]}];#Sch name = JA8
 #set_property -dict { PACKAGE_PIN H2   IOSTANDARD LVCMOS33 } [get_ports {JA[6]}];#Sch name = JA9
 #set_property -dict { PACKAGE_PIN G3   IOSTANDARD LVCMOS33 } [get_ports {JA[7]}];#Sch name = JA10
 
 ##Pmod Header JB
-set_property -dict { PACKAGE_PIN A14   IOSTANDARD LVCMOS33 } [get_ports ps2_dat];#Sch name = JB1
-set_property -dict { PACKAGE_PIN B15   IOSTANDARD LVCMOS33 } [get_ports ps2_clk];#Sch name = JB3
+set_property -dict { PACKAGE_PIN A14   IOSTANDARD LVCMOS33  PULLUP true } [get_ports ps2_dat];#Sch name = JB1
+set_property -dict { PACKAGE_PIN B15   IOSTANDARD LVCMOS33  PULLUP true } [get_ports ps2_clk];#Sch name = JB3
 #set_property -dict { PACKAGE_PIN A14   IOSTANDARD LVCMOS33 } [get_ports {JB[0]}];#Sch name = JB1
 #set_property -dict { PACKAGE_PIN A16   IOSTANDARD LVCMOS33 } [get_ports {JB[1]}];#Sch name = JB2
 #set_property -dict { PACKAGE_PIN B15   IOSTANDARD LVCMOS33 } [get_ports {JB[2]}];#Sch name = JB3

@@ -5,6 +5,9 @@
 # 1. Download vhdl_time_pilot_rev_0_0_2017_11_05.zip from SourceForge.
 # 2. Extract it into the repo root as vhdl_time_pilot_rev_0_0_2017_11_05/.
 # 3. Apply any synthesis-fix patches under contrib/basys3/code/ (idempotent).
+#    Excludes *_de10_lite_to_basys3.patch: that file is a record of the
+#    top-level rewrite (authored by make_de10_lite_to_basys3_patch.sh, applied
+#    to a different target file), not a fix to apply to the pristine tree.
 # 4. Run contrib/tools/prep_roms.sh (compile make_vhdl_prom, convert .bat,
 #    unzip romset, generate PROM VHDL).
 #
@@ -36,6 +39,9 @@ unzip -o "$ZIP" -d "$ROOT"
 step "3/4 Applying synthesis-fix patches"
 for p in "$CONTRIB"/code/*.patch; do
     [ -e "$p" ] || continue
+    case "$p" in
+        *_de10_lite_to_basys3.patch) continue ;;
+    esac
     echo "==> applying $p"
     patch -p1 --forward < "$p"
 done

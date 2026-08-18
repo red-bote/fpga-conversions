@@ -44,6 +44,7 @@ JA joystick (active-low, switch to GND):
 | btnU/btnL/btnR/btnD | `btnU/L/R/D` | declared, unused (reserved) |
 | sw(15) | `O_PMODAMP2_GAIN` | AMP gain: 0 = 12 dB, 1 = 6 dB |
 | sw(14) | `O_PMODAMP2_SHUTD` | AMP shutdown: 0 = off, 1 = on |
+| sw(7:0) | `dip_switch_2` | Sound(8)/Difficulty(7-5)/Bonus(4)/Cocktail(3)/lives(2-1) |
 | JB1 / JB3 | `ps2_dat` / `ps2_clk` | PS/2 keyboard |
 | JA1-JA4, JA7 | `JA(0..4)` | joystick (active-low) |
 | JC (PmodAMP2) | `O_PMODAMP2_AIN` | PWM audio (JC1=AIN, JC2=GAIN, JC4=SHUTD) |
@@ -77,12 +78,23 @@ From the `Time-Pilot-by-Dar/` directory, `make` wraps the scripted setup:
   archive, apply any synthesis-fix patches, then chain into the rom-prep.
 - `make clk_wiz` — `contrib/basys3/vivado/make_clk_wiz_0.sh`: generate the `clk_wiz_0` MMCM
   IP (12.288 / 14.318 MHz from 100 MHz).
-- `make all` — setup + clk_wiz.
+- `make patch` — `contrib/tools/make_de10_lite_to_basys3_patch.sh`: author
+  `time_pilot_basys3.vhd` and its record patch `contrib/basys3/code/
+  time_pilot_de10_lite_to_basys3.patch`.
+- `make all` — setup + clk_wiz + patch.
+- `make synth` — run synthesis (`contrib/tools/make_time_pilot_basys3_bitstream.sh synth`).
+- `make bitstream` — implementation + write_bitstream (depends on `synth`).
 - `make clean` — remove the extracted `vhdl_time_pilot_rev_0_0_2017_11_05/` tree.
 
 `contrib/basys3/vivado/create_project.sh` lays down the initial project tree: it creates
 `basys3/` in the extracted source, copies `time_pilot_basys3.xpr` (re-pointing the scandoubler
-reference to the local import), `Basys-3-Master.xdc`, and `vga_scandoubler.v`.
+reference to the local import), `Basys-3-Master.xdc`, and `vga_scandoubler.v`. Run it once after
+`make setup`, before `make synth`/`make bitstream`.
 
-The `patch`, `synth`, and `bitstream` targets are not wired yet — they await their scripts
-(top-level wrapper patch and bitstream). See `PORTING_SPEC.md`.
+The port is complete and hardware-verified: video, audio, PS/2 keyboard, JA joystick, dip
+switches, and reset all confirmed working on a physical Basys 3. See `PORTING_SPEC.md`.
+
+## TODO
+
+- Dip switches 1–8 are wired but unverified on hardware.
+- 15 kHz display is unverified and needs a switch wired to enable/disable TV mode.
