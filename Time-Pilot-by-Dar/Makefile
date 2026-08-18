@@ -9,7 +9,10 @@ all: setup clk_wiz patch
 setup:
 	$(TOOLS)/setup_time_pilot.sh
 
-clk_wiz: setup
+create_prj:
+	$(VIVADO)/create_project.sh
+
+clk_wiz: setup create_prj
 	$(VIVADO)/make_clk_wiz_0.sh
 
 # Regenerate time_pilot_de10_lite_to_basys3.patch and time_pilot_basys3.vhd top level.
