@@ -25,6 +25,9 @@ This file is the single source of truth for design and build. Operational rules 
 - 31 kHz VGA on the Basys3 VGA connector (4-bit per color RGB + HS/VS).
 - PmodAMP2 sound-enable on `sw14` (down = enable, up = disable); gain-select on `sw15`
   (up = enable gain, down = disable gain).
+- Dip switches: `dip_switch_1` (coinage) is hardcoded `X"FF"`; `dip_switch_2`
+  (sound/difficulty/bonus/cocktail/lives) maps to `sw(7 downto 0)`, mirroring the upstream
+  DE10-lite alternative. Defaults: sw7-sw0 all down = `0x00`.
 
 ### Keyboard (PS/2, JB)
 
@@ -130,8 +133,8 @@ From scratch, to (re)build `pooyan_basys3.xpr`:
 1. Create a Vivado 2020.2 project for part `xc7a35tcpg236-1`, VHDL target language, top
    entity `pooyan_basys3`, saved as `basys3/pooyan_basys3/pooyan_basys3.xpr`.
 2. Reference (do not copy) the RTL sources from `vhdl_pooyan_rev_0_2_2020_04_26/`:
-   - `rtl_dar/` — `pooyan.vhd`, `pooyan_sound_board.vhd`, `gen_ram.vhd`,
-     `io_ps2_keyboard.vhd`, `kbd_joystick.vhd`, `decodeur_7_seg.vhd`
+- `rtl_dar/` — `pooyan.vhd`, `pooyan_sound_board.vhd`, `gen_ram.vhd`,
+      `io_ps2_keyboard.vhd`, `kbd_joystick.vhd`
    - `rtl_t80_350/` — the T80 Z80 core
    - `rtl_mikej/` — `YM2149_linmix_sep.vhd`
    - the generated PROM files from `tools/pooyan_unzip/` (must already exist, see above)

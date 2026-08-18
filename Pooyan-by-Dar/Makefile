@@ -3,7 +3,7 @@ SCRIPTS := contrib/basys3/tools
 
 .PHONY: all setup clk_wiz clean patch synth bitstream
 
-all: setup clk_wiz
+all: setup clk_wiz patch
 
 setup:
 	$(SCRIPTS)/setup_pooyan_basys3.sh

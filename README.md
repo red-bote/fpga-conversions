@@ -72,6 +72,13 @@ VGA, and `btnC` = reset (active-high). `sw14` = sound enable, `sw15` = AMP gain.
 Video is 31 kHz progressive VGA; scan doubling is either built into the core or
 added via an imported MiST/DECA scandoubler.
 
+## Shared tools
+
+`tools/vhdl_formatter.py` normalizes VHDL indentation to a fixed width per level
+(`--indent`, default 2) and can optionally align `<=` and `:` columns (`--align`).
+It is dependency-free (stdlib only), in-place or `--check`, and idempotent. Full
+spec: `tools/vhdl_formatter.md`.
+
 ## Copyright
 
 Roms and the generated PROM VHDL are copyrighted MAME-derived content and are

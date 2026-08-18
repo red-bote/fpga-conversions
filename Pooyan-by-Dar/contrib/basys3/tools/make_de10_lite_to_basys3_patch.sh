@@ -151,7 +151,7 @@ port map(
  audio_out    => audio,
 
  dip_switch_1 => X"FF", -- Coinage_B / Coinage_A
- dip_switch_2 => X"7F", -- Sound(8)/Difficulty(7-5)/Bonus(4)/Cocktail(3)/lives(2-1)
+ dip_switch_2 => sw(7 downto 0), -- Sound(8)/Difficulty(7-5)/Bonus(4)/Cocktail(3)/lives(2-1)
 
  start2      => joyPCFRLDU(7),
  start1      => joyPCFRLDU(6),
