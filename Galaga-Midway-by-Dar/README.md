@@ -73,7 +73,7 @@ to generate the PROM VHDL (`galaga_cpu1/2/3.vhd`, `cs54xx_prog.vhd`,
 these generated files in place, so the build needs only the staged ROMs + the
 script.
 
-Game ROMs are copyrighted — never commit or redistribute them.
+machine ROMs are copyrighted — never commit or redistribute them.
 
 ## Applying the credit-mode fix
 

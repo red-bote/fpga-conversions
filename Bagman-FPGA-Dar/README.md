@@ -58,7 +58,7 @@ Then run `./make_bagman_proms.sh` from that directory to generate the PROM VHDL
 `bagman_speech1/2.vhd`). The Vivado project references these generated files in
 place, so the build needs only the staged ROMs + the script.
 
-Game ROMs are copyrighted — never commit or redistribute them.
+machine ROMs are copyrighted — never commit or redistribute them.
 
 ## Applying the XOR-width fix
 

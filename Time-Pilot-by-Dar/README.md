@@ -6,7 +6,7 @@ http://darfpga.blogspot.fr). Basys 3 (Artix-7) port by Red~Bote. See
 
 - Vivado 2020.2 project: `basys3/time_pilot_basys3.xpr` (top entity
   `time_pilot_basys3`)
-- Core clocks: 12.288 MHz (game core) + 14.318 MHz (sound) from the 100 MHz
+- Core clocks: 12.288 MHz (machine core) + 14.318 MHz (sound) from the 100 MHz
   Basys 3 oscillator via `clk_wiz_0`
 - `clk_wiz_0` Clocking Wizard (MMCM, 100 MHz in): `clk_out1` = 12.288 MHz +
   `clk_out2` = 14.318 MHz; reset active-high (btnC), `locked` used. Solved
@@ -66,4 +66,4 @@ VHDL (`time_pilot_prog.vhd`, `time_pilot_sound_prog.vhd`,
 Vivado project references these generated files in place, so the build needs
 only the staged ROMs + the script.
 
-Game ROMs are copyrighted — never commit or redistribute them.
+machine ROMs are copyrighted — never commit or redistribute them.

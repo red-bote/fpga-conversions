@@ -1,167 +1,184 @@
-# Pooyan-by-Dar (Basys 3 port)
+# Pooyan by Dar — Basys3 port
 
-Pooyan (Konami, 1982) by Dar (`darfpga@aol.fr`, http://darfpga.blogspot.fr).
-Basys 3 (Artix-7) port by Red~Bote. See `readme-dar.txt` for the original
-Dar release notes.
+Porting Pooyan (Konami, 1982) by Dar (`darfpga@aol.fr`, <http://darfpga.blogspot.fr>) to the
+Digilent Basys3 (Artix-7, part `xc7a35tcpg236-1`).
 
-- Vivado 2020.2 project: `basys3/pooyan_basys3/pooyan_basys3.xpr` (top entity
-  `pooyan_basys3`)
-- Core clocks: 12.288 MHz (game core) + 14.318 MHz (sound) from the 100 MHz
-  Basys 3 oscillator via `clk_wiz_0`
-- `clk_wiz_0` Clocking Wizard (MMCM, 100 MHz in): `clk_out1` = 12.288 MHz +
-  `clk_out2` = 14.318 MHz; reset active-high (btnC), `locked` used. Solved
-  MMCM: `DIVCLK_DIVIDE=7`, `CLKFBOUT_MULT_F=56.125`, `CLKOUT0_DIVIDE_F=65.25`,
-  `CLKOUT1_DIVIDE=56`.
+- Source archive: <https://sourceforge.net/projects/darfpga/files/Software%20VHDL/pooyan/>
+  (`vhdl_pooyan_rev_0_2_2020_04_26.zip`)
+- Basys3 port by Red~Bote. Upstream Dar release notes: `vhdl_pooyan_rev_0_2_2020_04_26/README.txt`.
 
-## Features supported
+This file is the single source of truth for design and build. Operational rules live in
+`.opencode/rules.md` and `AGENTS.md`.
 
-- **Video**: 31 kHz progressive VGA via an imported DECA scandoubler
-  (`imports/deca/vga_scandoubler.v`, from
-  <https://github.com/DECAfpga/Arcade_Pooyan/blob/main/deca/vga_scandoubler.v>);
-  `enable_scandoubling` and `disable_scaneffect` are both `1`; `clkvga` is
-  `clock_12` (12.288 MHz) and `clkvideo` is `clock_6` (half-rate). 15 kHz mode
-  is the scandoubler's built-in bypass (`enable_scandoubling = '0'` → `hsync <=
-  csync`, RGB passthrough), matching the DE10's native output on the same VGA
-  connector — not yet wired.
-- Sync wiring (do NOT copy the DE10 wrapper here — it leaves `video_hs`/
-  `video_vs` open and drives VGA HSYNC from `csync` directly): the core's
-  `video_hs`/`video_vs`/`video_csync` (all active-low) are wired to toplevel
-  `hsync`/`vsync`/`csync` signals feeding the scandoubler's
-  `hsync_ext_n`/`vsync_ext_n`/`csync_ext_n` inputs, and the scandoubler's
-  `hsync`/`vsync` outputs drive the toplevel `vga_hs`/`vga_vs` ports (the
-  Hsync/Vsync pins in `pooyan_basys3.xdc`, generated from the Digilent
-  Basys-3-Master.xdc at
-  <https://github.com/Digilent/digilent-xdc/blob/master/Basys-3-Master.xdc>).
-- **Sound**: mono PWM audio on PmodAMP2 (JC header).
-- **Controls**: PS/2 keyboard + JA joystick (OR-merged), btnC = reset.
+## External IO (Basys3)
 
-| Input | Keyboard |
-|-------|----------|
-| Move | Arrow keys |
-| Fire | Space |
-| Coin | F1 |
-| Start 1 | F2 |
-| Start 2 | F3 |
+- Atari-style joystick on JA (active-low; internal `PULLUP true` in the XDC; inverted in the
+  top-level OR-merge so a press reads active-high, matching the core). Physical map
+  `JA1=right, JA2=left, JA3=down, JA4=up, JA7=fire`; coin/start reachable via combos
+  `coin=fire+up`, `start1=fire+left`, `start2=fire+right`.
+- Single-player: P2 controls are hardwired to P1 (`fire2/right2/left2/down2/up2` reuse the
+  P1 signals), regardless of input source.
+- Mono PWM audio on PmodAMP2 (JC header).
+- PS/2 keyboard on JB (internal `PULLUP true` on `ps2_dat`/`ps2_clk` in the XDC), OR-merged with
+  the JA joystick; `btnC` = reset (active-high — pressed
+  asserts reset; the Basys3 button is active-high, unlike the DE10's active-low `key(0)`).
+- 31 kHz VGA on the Basys3 VGA connector (4-bit per color RGB + HS/VS).
+- PmodAMP2 sound-enable on `sw14` (down = enable, up = disable); gain-select on `sw15`
+  (up = enable gain, down = disable gain).
 
-JA joystick (active-low, switch to GND):
-- JA1 = Right, JA2 = Left, JA3 = Down, JA4 = Up, JA7 = Fire
-- Coin = Fire + Up; Start 1 = Fire + Left; Start 2 = Fire + Right
-- Player 2 mirrors player 1 movement/fire inputs.
+### Keyboard (PS/2, JB)
 
-## IO mapping
+- SPACE = fire; arrow keys = up/down/left/right.
+- F1 = coin, F2 = start 1P, F3 = start 2P.
+- Note: the upstream Dar `README.txt` mislabels the F-keys (it lists F3 = add coin,
+  F2 = start 2P, F1 = start 1P). The code in `rtl_dar/kbd_joystick.vhd` is authoritative:
+  F1 = coin, F2 = start 1P, F3 = start 2P.
 
-| Port | Dir | Width | Pins | Function |
-|------|-----|-------|------|----------|
-| clk | in | 1 | W5 | clock into `clk_wiz_0` MMCM (100 MHz) |
-| btnC | in | 1 | U18 | reset (active-high) |
-| sw | in | 16 | V17;V16;W16;W17;W15;V15;W14;W13;V2;T3;T2;R3;W2;U1;T1;R2 | switches; sw(15)/sw(14) drive AMP gain/shutdown |
-| ps2_dat | in | 1 | A14 | PS/2 keyboard data (JB1) |
-| ps2_clk | in | 1 | B15 | PS/2 keyboard clock (JB3) |
-| JA | in | 5 | J1;L2;J2;G2;H1 | joystick (active-low, PULLUP true) |
-| O_PMODAMP2_AIN | out | 1 | K17 | PWM audio (JC1) |
-| O_PMODAMP2_GAIN | out | 1 | M18 | AMP gain: 0 = 12 dB, 1 = 6 dB (JC2) |
-| O_PMODAMP2_SHUTD | out | 1 | P18 | AMP shutdown: 0 = off, 1 = on (JC4) |
-| vga_r | out | 4 | G19;H19;J19;N19 | VGA Red 4-bit |
-| vga_g | out | 4 | J17;H17;G17;D17 | VGA Green 4-bit |
-| vga_b | out | 4 | N18;L18;K18;J18 | VGA Blue 4-bit |
-| vga_hs | out | 1 | P19 | VGA Hsync |
-| vga_vs | out | 1 | R19 | VGA Vsync |
+## Clocking
 
-## Wiring facts
+The Basys3 provides a 100 MHz oscillator. A Vivado MMCM (`clk_wiz_0`) derives the 12 MHz
+(video board) and 14 MHz (sound board) clocks. The top level instantiates `clk_wiz_0`; its IP
+files must be (re)generated and placed under `sources_1/imports/clk_wiz_0/`.
 
-| Fact | Value |
-|------|-------|
-| clk_wiz.input | 100.000 |
-| clk_wiz.out1 | 12.288 |
-| clk_wiz.out2 | 14.318 |
-| clk_wiz.out1_signal | clock_12 |
-| clk_wiz.out2_signal | clock_14 |
-| scandoubler.clkvga | clock_12 |
-| scandoubler.clkvideo | clock_6 |
-| kbd_clk | clock_6 |
-| pwm_clk | clock_14 |
-| scandoubler.rgb_width | 6 |
-| rgb_vga | 4 |
-| dip_switch_1 | FF |
-| dip_switch_2 | 7F |
-| scandoubler.enable | 1 |
-| scandoubler.scaneffect | 1 |
-| amp.gain_from | sw(15) |
-| amp.shutdown_from | sw(14) |
-| rgb_core | 3;3;2 |
-| video_clk | open |
-| ja.pullup | 1 |
+## VGA
 
-## ROM set required
+31 kHz VGA uses the DECA scan doubler
+(<https://github.com/DECAfpga/Arcade_Pooyan/blob/main/deca/vga_scandoubler.v>), kept at
+`contrib/basys3/code/vga_scandoubler.v`. `enable_scandoubling` and `disable_scaneffect` are both set
+to 1. **Modification of `vga_scandoubler.v` is off-limits** — it is the hash-checked canonical
+cleanroom import.
 
-MAME ROM set `pooyan.zip`, unzipped into `tools/pooyan_unzip/`:
+15 kHz mode is selectable via the scandoubler's built-in bypass (`enable_scandoubling = '0'` →
+`hsync <= csync`, RGB passthrough), matching the DE10's native output on the same VGA connector.
 
-```
-~/roms/pooyan.zip   ->   tools/pooyan_unzip/
-```
+## Top level
 
-Then run `./make_pooyan_proms.sh` from that directory to generate the PROM VHDL:
-`pooyan_prog.vhd`, `pooyan_sound_prog.vhd`, `pooyan_char_grphx1/2.vhd`,
-`pooyan_sprite_grphx1/2.vhd`, `pooyan_palette.vhd`,
-`pooyan_char_color_lut.vhd`, `pooyan_sprite_color_lut.vhd`.
+The Basys3 top level is derived from
+`vhdl_pooyan_rev_0_2_2020_04_26/rtl_dar/pooyan_de10_lite.vhd` by applying the patch
+`contrib/basys3/code/pooyan_de10_lite_to_basys3.patch`, which adapts it for:
+- PmodAMP2 sound output, and
+- the Basys3 VGA output (4 bits/color RGB + hsync/vsync signals).
 
-**Build prerequisite:** these generated files must exist before the project can
-be synthesized — `pooyan.vhd` and `pooyan_sound_board.vhd` instantiate each one
-by entity name, and `rtl_dar/proms/` is empty in the tree, so a build without
-them fails with missing entities. The Vivado project references the generated
-files in place, so the build needs only the staged ROMs + this script. The
-script needs `make_vhdl_prom` rebuilt from
-`tools/tools_prom_src/src/make_vhdl_prom.c` (`gcc make_vhdl_prom.c -lm`) — the
-shipped `linux32` binary is a 32-bit ELF that will not run on a 64-bit host.
+## T80 core synthesis workaround
 
-Game ROMs and the generated PROM VHDL are copyrighted — never commit or
-redistribute them.
+The pristine `rtl_t80_350/T80.vhd` fails Vivado synthesis with
+"operands of logical operator '&' have different lengths" (T80.vhd:562).
+Apply `contrib/basys3/code/pooyan_t80_xor_width.patch` (modifies line 734).
 
-## Porting gotchas
+## ROM-derived PROM VHDL (required; never distributed)
 
-- `video_clk` (`pooyan.vhd:88`) is declared on the core entity but never
-  driven — leave it unconnected; do not add a wrapper port for it.
-- The DE10 `.qsf` lists `rtl_dar/proms/pooyan_sprite_grphx.vhd`, but the core
-  never instantiates it and the `.bat` never generates it — omit it from the
-  Vivado project (it would be a missing file).
-- RGB is 3:3:2 from the core (`video_r`/`video_g` 3 bits, `video_b` 2 bits).
-  Widen to 6:6:6 by bit duplication (`r&r`, `g&g`, `b&b&b`) for the scandoubler,
-  then truncate to 4:4:4 (`[5:2]`) for the VGA connector. Do NOT copy the DE10
-  wrapper's low-bit padding (`vga_r <= r&'0'`) — that is only for the direct
-  15 kHz path.
-- `pooyan_sound_board` is instantiated inside `pooyan.vhd` — the top wrapper
-  wires only the `pooyan` entity; do not instantiate the sound board again.
-- `vga_scandoubler.v` is self-contained (its `vgascanline_dport` and
-  `color_dimmed` submodules are in the same file) — importing that one file is
-  enough.
-- `vga_scandoubler.v` is a cleanroom import (origin URL above) — modifying it
-  is off limits; keep it byte-for-byte as imported. Any behavioral change goes
-  in the `pooyan_basys3.vhd` wrapper instead.
-- Keep the keyboard decoder on `clock_6` (the wrapper's divide-by-2 of
-  `clock_12`, as in the DE10 wrapper) so `io_ps2_keyboard`/`kbd_joystick` run on
-  the core's synchronous clock.
+The MAME romset `pooyan.zip` is required. It is unzipped into `tools/pooyan_unzip/`; run
+`./make_pooyan_proms.sh` from that directory to generate the PROM VHDL:
 
-## Applying the T80 XOR-width fix
+- `pooyan_prog.vhd`, `pooyan_sound_prog.vhd`
+- `pooyan_char_grphx1.vhd`, `pooyan_char_grphx2.vhd`
+- `pooyan_sprite_grphx1.vhd`, `pooyan_sprite_grphx2.vhd`
+- `pooyan_palette.vhd`, `pooyan_char_color_lut.vhd`, `pooyan_sprite_color_lut.vhd`
 
-The pristine T80 core (`vhdl_pooyan_rev_0_2_2020_04_26/rtl_t80_350/T80.vhd`)
-fails Vivado synthesis with "operands of logical operator '&' have different
-lengths" (T80.vhd:562). The fix widens the `ioq` mask operand:
+These generated files must exist before the project can be synthesized.
 
-```vhdl
-ioq := (ioq and '0'&x"07") xor ('0'&BusA); -- RB: modified for Vivado error ...
-```
+- Never distribute copyrighted roms.
+- Never commit or otherwise distribute the generated PROM VHDL.
 
-`pooyan_t80_xor_width.patch` in this directory applies that change to the
-unmodified Dar source. From the `Pooyan-by-Dar/` directory (containing
-`vhdl_pooyan_rev_0_2_2020_04_26/`):
+## Host paths
 
-```
-patch -p1 < pooyan_t80_xor_width.patch
-```
+- Vivado 2020.2: `/tools/Xilinx/Vivado/2020.2/bin/vivado`
+- Romset: `~/roms/pooyan.zip`
 
-Verify it took:
+## Project setup
 
-```
-grep -n "'0'&x\"07\"" vhdl_pooyan_rev_0_2_2020_04_26/rtl_t80_350/T80.vhd
-```
+The root `Makefile` wraps the scripted setup: `make setup` (download+extract upstream, apply
+patch, build the PROM generator, unzip the romset, generate PROM VHDL, copy ported assets),
+`make clk_wiz` (generate the `clk_wiz_0` IP, depends on setup), `make patch` (regenerate the
+DE10→Basys3 top level and its patch, depends on setup), `make all` (setup + clk_wiz),
+`make synth` (run synthesis, depends on setup/clk_wiz/patch), `make bitstream`
+(implementation + write_bitstream, depends on synth), and `make clean` (remove the generated
+`vhdl_pooyan_rev_0_2_2020_04_26/` tree).
 
+Project structure lives in `vhdl_pooyan_rev_0_2_2020_04_26/basys3/`. Use the Xilinx project at
+`vhdl_pooyan_rev_0_2_2020_04_26/basys3/pooyan_basys3/pooyan_basys3.xpr` (top entity
+`pooyan_basys3`, part `xc7a35tcpg236-1`).
+
+Copy-in files (from `contrib/basys3/`):
+
+- `vivado/pooyan_basys3.xpr` → `basys3/pooyan_basys3/pooyan_basys3.xpr`
+- `vivado/pooyan_basys3.xdc` → `basys3/pooyan_basys3/pooyan_basys3.srcs/constrs_1/imports/digilent-xdc-master/`
+- `code/vga_scandoubler.v` → `basys3/pooyan_basys3/pooyan_basys3.srcs/sources_1/imports/deca/vga_scandoubler.v`
+
+The constraints file is based on the
+[Digilent Basys-3-Master.xdc](https://github.com/Digilent/digilent-xdc/blob/master/Basys-3-Master.xdc).
+
+### Incomplete before synthesis
+
+Two pieces are referenced by the `.xpr` but not yet present and must be created first:
+
+- `pooyan_basys3.vhd` (top level) under `sources_1/new/`.
+- `clk_wiz_0` MMCM IP files under `sources_1/imports/clk_wiz_0/`.
+
+### Build
+
+Run Vivado build scripts from `/tmp` so `vivado.log` / `vivado.jou` stay outside the repository.
+
+`make synth` resets and runs the `synth_1` run. `make bitstream` runs the `impl_1` run through
+`write_bitstream` (it depends on `synth`), producing
+`vhdl_pooyan_rev_0_2_2020_04_26/basys3/pooyan_basys3/pooyan_basys3.runs/impl_1/pooyan_basys3.bit`.
+
+## Creating the Vivado Basys3 project
+
+From scratch, to (re)build `pooyan_basys3.xpr`:
+
+1. Create a Vivado 2020.2 project for part `xc7a35tcpg236-1`, VHDL target language, top
+   entity `pooyan_basys3`, saved as `basys3/pooyan_basys3/pooyan_basys3.xpr`.
+2. Reference (do not copy) the RTL sources from `vhdl_pooyan_rev_0_2_2020_04_26/`:
+   - `rtl_dar/` — `pooyan.vhd`, `pooyan_sound_board.vhd`, `gen_ram.vhd`,
+     `io_ps2_keyboard.vhd`, `kbd_joystick.vhd`, `decodeur_7_seg.vhd`
+   - `rtl_t80_350/` — the T80 Z80 core
+   - `rtl_mikej/` — `YM2149_linmix_sep.vhd`
+   - the generated PROM files from `tools/pooyan_unzip/` (must already exist, see above)
+3. Add the scan doubler: `contrib/basys3/code/vga_scandoubler.v` →
+   `sources_1/imports/deca/vga_scandoubler.v` (canonical, never modify).
+4. Add constraints: `contrib/basys3/vivado/pooyan_basys3.xdc` →
+   `constrs_1/imports/digilent-xdc-master/`.
+5. Generate the `clk_wiz_0` MMCM IP, deriving 12 MHz and 14 MHz from the 100 MHz Basys3
+   oscillator; place its outputs under `sources_1/imports/clk_wiz_0/`.
+6. Generate the top level `pooyan_basys3.vhd` under `sources_1/new/` with `make patch`
+   (writes the authored top level from `contrib/basys3/tools/make_de10_lite_to_basys3_patch.sh`
+   and emits `contrib/basys3/code/pooyan_de10_lite_to_basys3.patch` as a record of the change;
+   see the porting steps).
+7. Apply the T80 patch `contrib/basys3/code/pooyan_t80_xor_width.patch` to `rtl_t80_350/T80.vhd`.
+8. Run synthesis/implementation from `/tmp` so `vivado.log` / `vivado.jou` stay outside the repo.
+
+## Porting the DE10 top level to Basys3
+
+The adaptation is captured by `contrib/basys3/tools/make_de10_lite_to_basys3_patch.sh`, which
+authors the new `pooyan_basys3.vhd` top level and emits
+`contrib/basys3/code/pooyan_de10_lite_to_basys3.patch` as a record of the transformation of
+`vhdl_pooyan_rev_0_2_2020_04_26/rtl_dar/pooyan_de10_lite.vhd` into `pooyan_basys3.vhd`:
+
+1. **Port list** — map the Basys3 IO per `pooyan_basys3.xdc`: `clk` (100 MHz), `sw`, `btnC`,
+   joystick on `JA[]`, PS/2 on `jb` (`ps2_dat`, `ps2_clk`), PmodAMP2 on `jc`
+   (`O_PMODAMP2_AIN/GAIN/SHUTD`), `vga_r/g/b[3:0]`, `vga_hs`, `vga_vs`.
+2. **Clocking** — replace the DE10 `max10_pll_12M_14M` with `clk_wiz_0` (12/14 MHz from the
+   100 MHz oscillator); keep the internal `clock_6` divider that feeds the PS/2 path.
+3. **Core instantiation** — keep the `pooyan` entity port map unchanged (r/g/b, csync,
+   blankn, hs, vs, audio_out).
+4. **VGA via scan doubler** — feed the core's 3+3+2-bit video (zero-extended to 6-bit) into
+   the doubler's `ri/gi/bi`, `csync` → `csync_ext_n`, HS/VS from the core, with
+   `enable_scandoubling`/`disable_scaneffect` = 1; take the 6-bit `ro/go/bo` down to the
+   Basys3 4-bit VGA connector. The core's `video_hs`/`video_vs` are **active-low** (see
+   `pooyan.vhd` sync generation) and are wired **directly** (no inversion) to the doubler's
+   active-low `hsync_ext_n`/`vsync_ext_n`; the doubler re-derives active-low `hsync`/`vsync`
+   for the VGA connector. The 15 kHz bypass (`enable_scandoubling='0'` → `hsync <= csync`)
+   remains selectable. The doubler is clocked `clkvideo` = `clock_6` (halved core clock) and
+   `clkvga` = `clock_12`, giving the ~2× read/write ratio the line buffer needs for real
+   horizontal doubling. The RGB inputs are gated on `blankn` (black during blank), keeping the
+   DE10 top's blanking behavior now that blanking happens *before* the doubler rather than on
+   the final `vga_r/g/b`. This gating is kept as a defensive measure and is to be confirmed on
+   hardware — if the core already emits black pixels during blank, it may be redundant.
+5. **Audio** — port the DE10 PWM accumulator (clocked on `clock_14`); drive `O_PMODAMP2_AIN`
+   with the PWM bit, and route `sw14` (sound enable) to `O_PMODAMP2_SHUTD` and `sw15` (gain
+   select) to `O_PMODAMP2_GAIN`.
+6. **Inputs** — keep the PS/2 keyboard + `kbd_joystick`; OR-merge the JA joystick with it.
+   The core's input boundary is active-high (`pooyan.vhd` `input_0/1/2 <= ... & not <input>`),
+   so the active-low JA bits are inverted in the OR-merge; fire+direction combos provide
+   coin/start from the joystick. `btnC` = reset.

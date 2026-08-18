@@ -1,46 +1,27 @@
-# Pooyan-by-Dar Makefile.
-#   make            build the Basys 3 port (default target)
-#   make build      same as above
-#   make setup-roms stage the romset + generate the PROM VHDL (no Vivado)
-#   make clean      remove Vivado build outputs, keep the project sources
-#   make distclean  restore to just the repo-tracked files (README.md,
-#                   readme-dar.txt, pooyan_t80_xor_width.patch, contrib/)
-#
-# The build delegates to contrib/basys3/create_project.sh (single authority
-# for the port). distclean delegates to contrib/basys3/clean_project.sh
-# (single authority for what is generated vs. repo content).
+# Default target: build the whole scripted Basys3 port tree.
+SCRIPTS := contrib/basys3/tools
 
-MAKEFILE_DIR := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))/
-REV_DIR      := vhdl_pooyan_rev_0_2_2020_04_26
-PROJ_DIR     := $(MAKEFILE_DIR)$(REV_DIR)/basys3/pooyan_basys3
+.PHONY: all setup clk_wiz clean patch synth bitstream
 
-.PHONY: build clean distclean setup-roms
+all: setup clk_wiz
 
-# Default target: build the Basys 3 port (create_project.sh). Run from /tmp
-# so vivado.log / vivado.jou land outside the repo (AGENTS.md convention).
-build:
-	@cd /tmp && bash "$(MAKEFILE_DIR)contrib/basys3/create_project.sh"
+setup:
+	$(SCRIPTS)/setup_pooyan_basys3.sh
+
+# Regenerate pooyan_de10_lite_to_basys3.patch and pooyan_basys3.vhd top level.
+patch: setup
+	$(SCRIPTS)/make_de10_lite_to_basys3_patch.sh
+
+clk_wiz: setup
+	$(SCRIPTS)/make_clk_wiz_0.sh
+
+# Run synthesis only (resets synth_1 first).
+synth: setup clk_wiz patch
+	$(SCRIPTS)/make_pooyan_basys3_bitstream.sh synth
+
+# Implementation + write_bitstream (depends on synthesis).
+bitstream: synth
+	$(SCRIPTS)/make_pooyan_basys3_bitstream.sh bitstream
 
 clean:
-	@if [ -d "$(PROJ_DIR)" ]; then \
-	  rm -rf "$(PROJ_DIR)/pooyan_basys3.runs" \
-	         "$(PROJ_DIR)/pooyan_basys3.cache" \
-	         "$(PROJ_DIR)/pooyan_basys3.gen" \
-	         "$(PROJ_DIR)/pooyan_basys3.hw" \
-	         "$(PROJ_DIR)/pooyan_basys3.sim" \
-	         "$(PROJ_DIR)/pooyan_basys3.ip_user_files"; \
-	  find "$(PROJ_DIR)" \( -name '*.jou' -o -name '*.log' -o -name '*.wdb' -o -name '*.str' \) -delete; \
-	  echo "cleaned: $(PROJ_DIR) build tree"; \
-	else \
-	  echo "clean: no project dir yet ($(PROJ_DIR))"; \
-	fi
-	@rm -f "$(MAKEFILE_DIR)vivado.log" "$(MAKEFILE_DIR)vivado.jou"
-
-distclean:
-	@bash "$(MAKEFILE_DIR)contrib/basys3/clean_project.sh"
-
-# Stage the MAME romset into tools/pooyan_unzip/ and generate the PROM VHDL
-# in place (create_project.sh --stage-roms; no Vivado needed). Idempotent:
-# skips when all PROM VHDL are already present.
-setup-roms:
-	@bash "$(MAKEFILE_DIR)contrib/basys3/create_project.sh" --stage-roms
+	rm -rf vhdl_pooyan_rev_0_2_2020_04_26

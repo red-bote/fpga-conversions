@@ -66,4 +66,4 @@ PROM VHDL (`burnin_rubber_prog.vhd`, `bg_graphx_1/2.vhd`,
 references these generated files in place, so the build needs only the staged
 ROMs + the script.
 
-Game ROMs are copyrighted — never commit or redistribute them.
+machine ROMs are copyrighted — never commit or redistribute them.

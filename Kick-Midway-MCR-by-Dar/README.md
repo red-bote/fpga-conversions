@@ -66,4 +66,4 @@ individual chip ROMs (`1200a`-`1900h`, etc.) into `kick_cpu.bin` /
 references these generated files in place, so the build needs only the staged
 ROMs + the script.
 
-Game ROMs are copyrighted — never commit or redistribute them.
+machine ROMs are copyrighted — never commit or redistribute them.

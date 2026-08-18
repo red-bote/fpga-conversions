@@ -64,7 +64,7 @@ generate the PROM VHDL (`popeye_cpu.vhd`, `popeye_cpu_protected.vhd`,
 `popeye_bg_palette_rgb.vhd`). The Vivado project references these generated
 files in place, so the build needs only the staged ROMs + the script.
 
-Game ROMs are copyrighted — never commit or redistribute them.
+machine ROMs are copyrighted — never commit or redistribute them.
 
 ## Applying the linmix sensitivity fix
 

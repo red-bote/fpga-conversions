@@ -66,4 +66,4 @@ before conversion, and `82s123.12d` is the same color PROM as Kick's. The
 Vivado project references these generated files in place, so the build needs
 only the staged ROMs + the script.
 
-Game ROMs are copyrighted — never commit or redistribute them.
+machine ROMs are copyrighted — never commit or redistribute them.

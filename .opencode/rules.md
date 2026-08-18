@@ -24,17 +24,15 @@
 ## Documentation scope (AGENTS.md)
 
 - AGENTS.md must not carry design information about the support scripts
-  (`download_darfpga.sh`, `unzip_darfpga.sh`, `make_*_proms.sh`,
+  (`make_*_proms.sh`,
   `contrib/basys3/*.sh`, `Makefile`) unless explicitly instructed otherwise
   in these Operational Rules. Script design lives in the scripts themselves
   and in the root `README.md`; keep AGENTS.md to operational conditions.
 
 - Explicitly instructed (AGENTS.md may carry these):
   - Vivado build scripts run from `/tmp` so `vivado.log`/`vivado.jou` land
-    outside the repo: `cd /tmp && <repo>/<Machine>-by-Dar/contrib/basys3/create_project.sh`.
+    outside the repo.
   - Tools/paths resolve as `ENV_VAR → project default → interactive prompt`:
     - Vivado: `VIVADO` → `/tools/Xilinx/Vivado/2020.2/bin/vivado`
     - roms: `ROMZIP` → `~/roms/`
-    - Dar source zip: `DARZIP` → `<repo>/dloads/`
-  - `contrib/basys3/vga_scandoubler.v` is the canonical cleanroom import
-    (hash-checked by `create_project.sh`) — never modify it.
+   - `contrib/basys3/vga_scandoubler.v` is the canonical cleanroom import — never modify it.
