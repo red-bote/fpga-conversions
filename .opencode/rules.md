@@ -18,7 +18,7 @@
   files inside the repo.
 - Exceptions (documented elsewhere in these rules): `/tmp` (scratch, and the
   Vivado build scripts that run from `/tmp`), `~/roms/` (`ROMZIP`), and the
-  `ENV_VAR` paths from the tool resolution rule (`VIVADO`, `DARZIP`). Anything
+  `ENV_VAR` paths from the tool resolution rule (`VIVADO`). Anything
   else outside the repo requires the user's explicit permission.
 
 ## Documentation scope (AGENTS.md)

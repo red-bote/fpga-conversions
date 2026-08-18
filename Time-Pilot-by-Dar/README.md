@@ -58,12 +58,31 @@ MAME ROM set `timeplt.zip`, unzipped into `tools/time_pilot_unzip/`:
 ~/roms/timeplt.zip   ->   tools/time_pilot_unzip/
 ```
 
-Then run `./make_time_pilot_proms.sh` from that directory to generate the PROM
-VHDL (`time_pilot_prog.vhd`, `time_pilot_sound_prog.vhd`,
-`time_pilot_char_grphx.vhd`, `time_pilot_sprite_grphx.vhd`,
-`time_pilot_palette_blue_green.vhd`, `time_pilot_palette_green_red.vhd`,
-`time_pilot_char_color_lut.vhd`, `time_pilot_sprite_color_lut.vhd`). The
-Vivado project references these generated files in place, so the build needs
-only the staged ROMs + the script.
+`contrib/tools/prep_roms.sh` handles the Linux rom-prep: it compiles `make_vhdl_prom`,
+converts `make_time_pilot_proms.bat` → `make_time_pilot_proms.sh`, unzips `timeplt.zip`, and
+runs the generator to produce the PROM VHDL (`time_pilot_prog.vhd`,
+`time_pilot_sound_prog.vhd`, `time_pilot_char_grphx.vhd`,
+`time_pilot_sprite_grphx.vhd`, `time_pilot_palette_blue_green.vhd`,
+`time_pilot_palette_green_red.vhd`, `time_pilot_char_color_lut.vhd`,
+`time_pilot_sprite_color_lut.vhd`). The Vivado project references these generated files in
+place, so the build needs only the staged ROMs + the script.
 
 machine ROMs are copyrighted — never commit or redistribute them.
+
+## Build / setup
+
+From the `Time-Pilot-by-Dar/` directory, `make` wraps the scripted setup:
+
+- `make setup` — `contrib/tools/setup_time_pilot.sh`: download + extract the Dar source
+  archive, apply any synthesis-fix patches, then chain into the rom-prep.
+- `make clk_wiz` — `contrib/basys3/vivado/make_clk_wiz_0.sh`: generate the `clk_wiz_0` MMCM
+  IP (12.288 / 14.318 MHz from 100 MHz).
+- `make all` — setup + clk_wiz.
+- `make clean` — remove the extracted `vhdl_time_pilot_rev_0_0_2017_11_05/` tree.
+
+`contrib/basys3/vivado/create_project.sh` lays down the initial project tree: it creates
+`basys3/` in the extracted source, copies `time_pilot_basys3.xpr` (re-pointing the scandoubler
+reference to the local import), `Basys-3-Master.xdc`, and `vga_scandoubler.v`.
+
+The `patch`, `synth`, and `bitstream` targets are not wired yet — they await their scripts
+(top-level wrapper patch and bitstream). See `PORTING_SPEC.md`.

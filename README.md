@@ -15,9 +15,11 @@ source of truth for that machine's design and build.
 and `contrib/basys3/` build scripts. Use it as the template when bringing up the
 other machines.
 
-Every other `<Machine>-by-Dar/` currently contains only its design `README.md`
+Most other `<Machine>-by-Dar/` currently contain only their design `README.md`
 plus any synthesis-fix `*.patch`; the Dar source trees are fetched/extracted
-locally and are not checked in.
+locally and are not checked in. `Time-Pilot-by-Dar/` is a scripted scaffold
+(Makefile + `contrib/` scripts + `PORTING_SPEC.md`) but is not yet a fully
+working port (no top-level wrapper, bitstream, or hardware verification yet).
 
 ## Machine index
 
@@ -76,8 +78,7 @@ added via an imported MiST/DECA scandoubler.
 
 `tools/vhdl_formatter.py` normalizes VHDL indentation to a fixed width per level
 (`--indent`, default 2) and can optionally align `<=` and `:` columns (`--align`).
-It is dependency-free (stdlib only), in-place or `--check`, and idempotent. Full
-spec: `tools/vhdl_formatter.md`.
+It is dependency-free (stdlib only), in-place or `--check`, and idempotent.
 
 ## Copyright
 

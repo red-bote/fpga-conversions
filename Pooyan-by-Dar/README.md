@@ -185,3 +185,8 @@ authors the new `pooyan_basys3.vhd` top level and emits
    The core's input boundary is active-high (`pooyan.vhd` `input_0/1/2 <= ... & not <input>`),
    so the active-low JA bits are inverted in the OR-merge; fire+direction combos provide
    coin/start from the joystick. `btnC` = reset.
+
+## TODO
+
+- Dip switches 1–8 are wired but unverified on hardware.
+- 15 kHz display is unverified and needs a switch wired to enable/disable TV mode.
