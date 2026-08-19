@@ -78,11 +78,11 @@ From the `Time-Pilot-by-Dar/` directory, `make` wraps the scripted setup:
   archive, apply any synthesis-fix patches, then chain into the rom-prep.
 - `make clk_wiz` — `contrib/basys3/vivado/make_clk_wiz_0.sh`: generate the `clk_wiz_0` MMCM
   IP (12.288 / 14.318 MHz from 100 MHz).
-- `make patch` — `contrib/tools/make_de10_lite_to_basys3_patch.sh`: author
+- `make patch` — `contrib/basys3/tools/make_de10_lite_to_basys3_patch.sh`: author
   `time_pilot_basys3.vhd` and its record patch `contrib/basys3/code/
   time_pilot_de10_lite_to_basys3.patch`.
 - `make all` — setup + clk_wiz + patch.
-- `make synth` — run synthesis (`contrib/tools/make_time_pilot_basys3_bitstream.sh synth`).
+- `make synth` — run synthesis (`contrib/basys3/tools/make_time_pilot_basys3_bitstream.sh synth`).
 - `make bitstream` — implementation + write_bitstream (depends on `synth`).
 - `make clean` — remove the extracted `vhdl_time_pilot_rev_0_0_2017_11_05/` tree.
 

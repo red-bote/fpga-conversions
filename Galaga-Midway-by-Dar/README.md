@@ -13,7 +13,8 @@ http://darfpga.blogspot.fr). Basys 3 (Artix-7) port by Red~Bote. See
 ## Features supported
 
 - **Video**: 31 kHz progressive VGA via an imported MiST scandoubler
-  (`imports/mist/scandoubler.v`).
+  (`imports/mist/scandoubler.v`), sourced from
+  <https://github.com/DECAfpga/Arcade_Galaga/blob/main/mist/scandoubler.v>.
 - **Sound**: mono PWM audio on PmodAMP2.
 - **Controls**: PS/2 keyboard + JA joystick (OR-merged), btnC = reset.
 

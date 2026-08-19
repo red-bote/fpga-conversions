@@ -15,7 +15,7 @@
 
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 CONTRIB="$ROOT/contrib/basys3"
 SRC="$ROOT/vhdl_time_pilot_rev_0_0_2017_11_05/rtl_dar/time_pilot_de10_lite.vhd"
 PROJ_DIR="$ROOT/vhdl_time_pilot_rev_0_0_2017_11_05/basys3"

@@ -1,6 +1,7 @@
 # Default target: build the whole scripted Basys3 port tree.
-TOOLS  := contrib/tools
-VIVADO := contrib/basys3/vivado
+TOOLS        := contrib/tools
+BASYS3_TOOLS := contrib/basys3/tools
+VIVADO       := contrib/basys3/vivado
 
 .PHONY: all setup clk_wiz patch synth bitstream clean
 
@@ -17,15 +18,15 @@ clk_wiz: setup create_prj
 
 # Regenerate time_pilot_de10_lite_to_basys3.patch and time_pilot_basys3.vhd top level.
 patch: setup
-	$(TOOLS)/make_de10_lite_to_basys3_patch.sh
+	$(BASYS3_TOOLS)/make_de10_lite_to_basys3_patch.sh
 
 # Run synthesis only (resets synth_1 first).
 synth: setup clk_wiz patch
-	$(TOOLS)/make_time_pilot_basys3_bitstream.sh synth
+	$(BASYS3_TOOLS)/make_time_pilot_basys3_bitstream.sh synth
 
 # Implementation + write_bitstream (depends on synthesis).
 bitstream: synth
-	$(TOOLS)/make_time_pilot_basys3_bitstream.sh bitstream
+	$(BASYS3_TOOLS)/make_time_pilot_basys3_bitstream.sh bitstream
 
 clean:
 	rm -rf vhdl_time_pilot_rev_0_0_2017_11_05

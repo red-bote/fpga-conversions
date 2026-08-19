@@ -48,6 +48,8 @@ Replace the DE10-lite ports (`max10_clk1_50`, `ledr`, `key`, `sw(9:0)`, `hex0-3`
 
 ## 5. Video / scan doubler (31 kHz VGA)
 
+- DECA `vga_scandoubler.v`, canonical cleanroom import, never modified, sourced from
+  <https://github.com/DECAfpga/Arcade_Pooyan/blob/main/deca/vga_scandoubler.v>.
 - Feed the core's 3+3+2-bit video, zero-extended to 6-bit, into the DECA `vga_scandoubler`
   with `enable_scandoubling`/`disable_scaneffect = 1`; take the 6-bit output down to the
   Basys 3 4-bit-per-color connector (`vga_*o(5 downto 2)`).

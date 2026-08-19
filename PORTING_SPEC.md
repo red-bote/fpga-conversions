@@ -73,7 +73,6 @@ pristine core, using Pooyan's top level as the worked example.
 - **Tool/path resolution** is `ENV_VAR → project default → interactive prompt`:
   - Vivado: `VIVADO` → `/tools/Xilinx/Vivado/2020.2/bin/vivado`
   - roms: `ROMZIP` → `~/roms/`
-- **Never modify `vga_scandoubler.v`** — canonical cleanroom import.
 - **Roms and generated PROM VHDL are copyrighted MAME-derived content** — never commit or
   distribute them. The `*.patch` files are the tracked record of changes to pristine Dar sources.
 

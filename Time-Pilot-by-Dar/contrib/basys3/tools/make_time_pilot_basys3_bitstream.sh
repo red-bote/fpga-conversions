@@ -24,7 +24,7 @@ fi
 
 VIVADO=/tools/Xilinx/Vivado/2020.2/bin/vivado
 
-ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 XPR="$ROOT/vhdl_time_pilot_rev_0_0_2017_11_05/basys3/time_pilot_basys3.xpr"
 
 if [ ! -f "$XPR" ]; then

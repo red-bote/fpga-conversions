@@ -21,7 +21,7 @@ been confirmed working on a physical Basys 3.
 ## 1. Port list (DE10-lite → Basys3)
 
 Confirmed against `time_pilot_de10_lite.vhd` and the built `time_pilot_basys3.vhd`
-(`contrib/tools/make_de10_lite_to_basys3_patch.sh`):
+(`contrib/basys3/tools/make_de10_lite_to_basys3_patch.sh`):
 
 | Basys 3 port | Function |
 |---|---|
@@ -60,8 +60,10 @@ Confirmed against `time_pilot_de10_lite.vhd` and the built `time_pilot_basys3.vh
 
 ## 5. Video / scan doubler (31 kHz VGA)
 
-- Use the DECA `vga_scandoubler.v` (same as Pooyan) with `enable_scandoubling` and
-  `disable_scaneffect` both `1` (verified, machine README).
+- Use the DECA `vga_scandoubler.v` (canonical cleanroom import, never
+  modified, sourced from
+  <https://github.com/DECAfpga/Arcade_Pooyan/blob/main/deca/vga_scandoubler.v>) with
+  `enable_scandoubling` and `disable_scaneffect` both `1` (verified, machine README).
 - The DE10-lite top leaves the core's `video_hs`/`video_vs` outputs unconnected (`open`,
   labeled "not tested"), even though `time_pilot.vhd` does drive them. The Basys3 top wires
   them to the scandoubler's `hsync_ext_n`/`vsync_ext_n` (Pooyan pattern) instead of leaving them
@@ -118,9 +120,9 @@ Confirmed against `time_pilot_de10_lite.vhd` and the built `time_pilot_basys3.vh
 - Fully scripted, mirroring Pooyan: `make setup` (`contrib/tools/setup_time_pilot.sh` —
   download/extract, apply synthesis-fix patches, rom-prep), `make clk_wiz`
   (`contrib/basys3/vivado/make_clk_wiz_0.sh`), `make patch`
-  (`contrib/tools/make_de10_lite_to_basys3_patch.sh` — authors `time_pilot_basys3.vhd` and its
-  record patch), `make synth` / `make bitstream`
-  (`contrib/tools/make_time_pilot_basys3_bitstream.sh`).
+  (`contrib/basys3/tools/make_de10_lite_to_basys3_patch.sh` — authors `time_pilot_basys3.vhd`
+  and its record patch), `make synth` / `make bitstream`
+  (`contrib/basys3/tools/make_time_pilot_basys3_bitstream.sh`).
 - `contrib/basys3/vivado/create_project.sh` lays down the Vivado project tree (non-nested:
   `.xpr` directly in `basys3/`, unlike Pooyan's nested `pooyan_basys3/` layout) and re-points the
   scandoubler import; run once after `make setup`.
