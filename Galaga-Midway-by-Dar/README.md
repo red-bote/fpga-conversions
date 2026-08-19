@@ -101,3 +101,22 @@ and coin_r = '0'`), i.e. at `rtl_dar/galaga.vhd:848`. Verify it took:
 grep -n "cs51XX_credit_mode <= '1'" vhdl_galaga_rev_0_3_2018_05_06/rtl_dar/galaga.vhd
 ```
 
+## Enabling VGA sync (Basys 3)
+
+The pristine Dar core leaves `video_hs`/`video_vs` unexposed (ports commented out,
+video-generator `hsync`/`vsync` wired to `open`). To drive the scan doubler's
+`hsync_ext_n`/`vsync_ext_n` from the core, apply
+`contrib/code/galaga_vga_sync.patch` to the pristine source. From the
+`Galaga-Midway-by-Dar/` directory (containing `vhdl_galaga_rev_0_3_2018_05_06/`):
+
+```
+patch -p1 < contrib/code/galaga_vga_sync.patch
+```
+
+It un-comments the two `video_hs`/`video_vs` output ports and wires the video
+generator's `hsync`/`vsync` to them. Verify it took:
+
+```
+grep -n "hsync   => video_hs" vhdl_galaga_rev_0_3_2018_05_06/rtl_dar/galaga.vhd
+```
+

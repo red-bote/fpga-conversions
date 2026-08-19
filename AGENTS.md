@@ -6,7 +6,7 @@ FPGA ports of Dar's arcade hardware to the Digilent Basys 3 (Artix-7 `xc7a35tcpg
 
 - Operational rules (terminology, git, filesystem scope) are the source of truth in `.opencode/rules.md` — follow it and this file together; both are auto-loaded via `.opencode/opencode.json`.
 - `README.md` has the machine index, common IO convention, and shared build workflow. Each machine's own `README.md` is the single source of truth for that machine's design and build.
-- `Pooyan-by-Dar/` is the reference, fully-scripted port (Makefile + `contrib/basys3/` scripts). Use it as the template when bringing up the other machines.
+- `Pooyan-by-Dar/` is the reference, fully-scripted port. `Time-Pilot-by-Dar/` follows the same scripted layout and is the other complete, hardware-verified port. `Galaga-Midway-by-Dar/` is a work-in-progress port following the same layout.
 
 ## Terminology (mandatory)
 
@@ -14,9 +14,10 @@ Per `.opencode/rules.md`: "hardware" = a platform directory; "machine" = hardwar
 
 ## Machine layout
 
-- `Pooyan-by-Dar/` — full scripted port. `contrib/basys3/{code,tools,vivado}/` holds patches, build scripts, and the top-level XDC/XPR; the actual Vivado project lives under the extracted `vhdl_pooyan_rev_0_2_2020_04_26/basys3/` tree.
-- `Time-Pilot-by-Dar/` — second complete, fully-scripted, hardware-verified port (same layout as Pooyan). Its Dar source tree is extracted locally and not checked in.
-- Other machines are scaffold-only: a design `README.md` plus `contrib/basys3/`; their Dar source trees are not checked in.
+- `Pooyan-by-Dar/` — reference port. `contrib/basys3/{code,tools,vivado}/` holds patches, build scripts, and the top-level XDC/XPR; the actual Vivado project lives under the extracted `vhdl_pooyan_rev_0_2_2020_04_26/basys3/` tree. Makefile has no `create_prj` step.
+- `Time-Pilot-by-Dar/` — complete, hardware-verified scripted port (same layout as Pooyan, plus a `create_prj` step). Its Dar source tree is extracted locally and not checked in.
+- `Galaga-Midway-by-Dar/` — work-in-progress scripted port (same layout, including `create_prj`).
+- Other machines (`Bagman-FPGA-Dar`, `Berzerk-FPGA-by-Dar`, `Burnin-Rubber-by-Dar`, `Kick-Midway-MCR-by-Dar`, `Popeye-by-Dar`, `Sky-skipper-by-Dar`, `Solar-Fox-by-Dar`) are scaffold-only: a design `README.md` plus any synthesis-fix `*.patch`.
 
 ## Build workflow (order matters)
 
