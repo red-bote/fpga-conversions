@@ -6,7 +6,8 @@
 # top-level wrapper). The script:
 #   1. Writes the target VHDL to a scratch dir.
 #   2. Diffs it against the pristine upstream source to produce the git-style
-#      patch at contrib/basys3/code/galaga_de10_lite_to_basys3.patch.
+#      patch at contrib/basys3/code/galaga_de10_lite_to_basys3.patch (matching the
+#      Pooyan/Time-Pilot convention; the fix patches stay flat in contrib/code/).
 #   3. Places the target where galaga_basys3.xpr expects it
 #      (basys3/galaga_basys3.srcs/sources_1/new/galaga_basys3.vhd).
 #
@@ -16,11 +17,10 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
-CONTRIB="$ROOT/contrib/basys3"
 SRC="$ROOT/vhdl_galaga_rev_0_3_2018_05_06/rtl_dar/galaga_de10_lite.vhd"
 PROJ_DIR="$ROOT/vhdl_galaga_rev_0_3_2018_05_06/basys3"
 TARGET_SRC="$PROJ_DIR/galaga_basys3.srcs/sources_1/new"
-PATCH="$CONTRIB/code/galaga_de10_lite_to_basys3.patch"
+PATCH="$ROOT/contrib/basys3/code/galaga_de10_lite_to_basys3.patch"
 
 WORK=/tmp/galaga_de10_to_basys3
 TARGET="$WORK/galaga_basys3.vhd"
@@ -36,16 +36,16 @@ mkdir -p "$WORK"
 
 cat > "$TARGET" <<'EOF'
 ---------------------------------------------------------------------------------
--- Basys3 Top level for Galaga Midway by Dar (darfpga@aol.fr) (06/11/2017)
+-- Basys3 Top level for Galaga (Namco/Midway, 1981) by Dar (darfpga@aol.fr) (06/11/2017)
 -- http://darfpga.blogspot.fr
 --
 -- Basys3 port by Red~Bote.
 --
--- Ported from galaga_de10_lite.vhd (DE10-lite rev 03 06/05/2018):
---  - 100 MHz board oscillator, clk_wiz_0 MMCM derives 36 MHz core clock
+-- Ported from galaga_de10_lite.vhd (DE10-lite rev 06/11/2017):
+--  - 100 MHz board oscillator, clk_wiz_0 MMCM derives 36 MHz
 --  - Atari-style joystick on JA, OR-merged with PS/2 keyboard (JB)
 --  - Mono PWM audio on PmodAMP2 (JC); sw14 = shutdown, sw15 = gain select
---  - 31 kHz VGA on the Basys3 VGA connector via the MiST scandoubler
+--  - 31 kHz VGA on the Basys3 VGA connector via the imported MiST scandoubler
 --  - btnC = reset
 ---------------------------------------------------------------------------------
 -- Educational use only
@@ -56,7 +56,6 @@ cat > "$TARGET" <<'EOF'
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.std_logic_unsigned.all;
 use ieee.numeric_std.all;
 
 library work;
@@ -86,65 +85,79 @@ end galaga_basys3;
 architecture struct of galaga_basys3 is
 
  signal clock_36 : std_logic;
- signal reset    : std_logic;
  signal clock_18 : std_logic;
- signal clock_12 : std_logic;
+ signal clock_9  : std_logic;
  signal clock_6  : std_logic;
- signal slot     : unsigned(2 downto 0);
+ signal clock_12 : std_logic;
+ signal slot     : std_logic_vector(2 downto 0);
+ signal reset    : std_logic;
+ signal mmcm_reset : std_logic := '0';
 
- signal r        : std_logic_vector(2 downto 0);
- signal g        : std_logic_vector(2 downto 0);
- signal b        : std_logic_vector(1 downto 0);
- signal csync    : std_logic;
- signal blankn   : std_logic;
+ signal r         : std_logic_vector(2 downto 0);
+ signal g         : std_logic_vector(2 downto 0);
+ signal b         : std_logic_vector(1 downto 0);
+ signal csync     : std_logic;
+ signal blankn    : std_logic;
+ signal hsync     : std_logic;
+ signal vsync     : std_logic;
 
- signal audio           : std_logic_vector( 9 downto 0);
+ signal audio           : std_logic_vector(9 downto 0);
  signal pwm_accumulator : std_logic_vector(12 downto 0);
 
- signal vga_ro    : std_logic_vector(5 downto 0);
- signal vga_go    : std_logic_vector(5 downto 0);
- signal vga_bo    : std_logic_vector(5 downto 0);
- signal vga_hs_o  : std_logic;
- signal vga_vs_o  : std_logic;
+ signal vga_r_i  : std_logic_vector(5 downto 0);
+ signal vga_g_i  : std_logic_vector(5 downto 0);
+ signal vga_b_i  : std_logic_vector(5 downto 0);
+ signal vga_r_o  : std_logic_vector(5 downto 0);
+ signal vga_g_o  : std_logic_vector(5 downto 0);
+ signal vga_b_o  : std_logic_vector(5 downto 0);
+ signal hsync_o  : std_logic;
+ signal vsync_o  : std_logic;
 
- signal video_ri : std_logic_vector(5 downto 0);
- signal video_gi : std_logic_vector(5 downto 0);
- signal video_bi : std_logic_vector(5 downto 0);
+ signal kbd_intr     : std_logic;
+ signal kbd_scancode : std_logic_vector(7 downto 0);
+ signal kbd_joy      : std_logic_vector(7 downto 0);
+ signal joyPCFRLDU   : std_logic_vector(7 downto 0);
 
- signal scanlines       : std_logic_vector(1 downto 0);
-
- signal kbd_intr      : std_logic;
- signal kbd_scancode  : std_logic_vector(7 downto 0);
- signal kbd_joy       : std_logic_vector(7 downto 0);
- signal joyPCFRLDU    : std_logic_vector(7 downto 0);
+ component scandoubler
+     port (
+         clk_sys   : in  std_logic;
+         scanlines : in  std_logic_vector (1 downto 0);
+         ce_x1     : in  std_logic;
+         ce_x2     : in  std_logic;
+         hs_in     : in  std_logic;
+         vs_in     : in  std_logic;
+         r_in      : in  std_logic_vector (5 downto 0);
+         g_in      : in  std_logic_vector (5 downto 0);
+         b_in      : in  std_logic_vector (5 downto 0);
+         hs_out    : out std_logic;
+         vs_out    : out std_logic;
+         r_out     : out std_logic_vector (5 downto 0);
+         g_out     : out std_logic_vector (5 downto 0);
+         b_out     : out std_logic_vector (5 downto 0)
+     );
+ end component;
 
 begin
 
 reset <= btnC;
 
--- Clock 36MHz for galaga core (from 100 MHz)
+-- Clock 36MHz for the core clock chain and the scan doubler's clock divider.
 clocks : entity work.clk_wiz_0
 port map(
  clk_in1  => clk,
  clk_out1 => clock_36,
+ reset    => mmcm_reset,  -- MMCM reset unused (btnC resets the core only)
  locked   => open
 );
 
--- Derive core clock_18 (18 MHz), scandoubler clk_sys clock_12 (12 MHz), and
--- ce_x1 clock_6 (6 MHz) from the 36 MHz PLL output via a 6-slot counter.
+-- Halve clock_36 to clock_18 for the galaga core (36/2).
 process (reset, clock_36)
 begin
 	if reset='1' then
-		slot     <= (others => '0');
-		clock_18 <= '0';
-		clock_12 <= '0';
-		clock_6  <= '0';
+		clock_18  <= '0';
 	else
 		if rising_edge(clock_36) then
-			if slot = 5 then slot <= (others => '0'); else slot <= slot + 1; end if;
-			if slot(0) = '1' then clock_18 <= not clock_18; end if;            -- toggle every 2 slots -> 18 MHz
-			if slot = 2 or slot = 5 then clock_12 <= not clock_12; end if;     -- toggle every 3 slots -> 12 MHz
-			if slot = 5 then clock_6  <= not clock_6;  end if;                 -- toggle every 6 slots -> 6 MHz
+				clock_18  <= not clock_18;
 		end if;
 	end if;
 end process;
@@ -158,15 +171,15 @@ port map(
  video_r      => r,
  video_g      => g,
  video_b      => b,
- video_clk    => open,
  video_csync  => csync,
  video_blankn => blankn,
- video_hs     => vga_hs_o,
- video_vs     => vga_vs_o,
+ video_hs     => hsync,
+ video_vs     => vsync,
  audio        => audio,
 
  b_test       => '1',
  b_svce       => '1',
+
  coin         => joyPCFRLDU(7),
  start1       => joyPCFRLDU(5),
  left1        => joyPCFRLDU(2),
@@ -178,46 +191,72 @@ port map(
  fire2        => joyPCFRLDU(4)
 );
 
--- 31 kHz VGA via the MiST scandoubler (canonical import, never modify)
--- Verified clocks (see SCANDOUBLER_CLOCK_SPEC.md): clk_sys = clock_12,
--- ce_x1 = clock_6, ce_x2 = '1' (ratio 12/6 = 2). clock_18 / clock_36 / video_clk
--- as clk_sys do NOT work.
--- The core's separate hsync/vsync (exposed by galaga_vga_sync.patch) are wired
--- directly to the doubler, active-low; the doubler re-times hsync for VGA.
--- RGB is gated on blankn; Galaga outputs 3/3/2 bits/color, padded to 6-bit.
-video_ri <= (r & "000") when blankn = '1' else "000000";
-video_gi <= (g & "000") when blankn = '1' else "000000";
-video_bi <= (b & "0000") when blankn = '1' else "000000";
+-- 31 kHz VGA via the imported MiST scandoubler.
+-- Pad the core's 3/3/2-bit RGB to 6 bits by MSB replication; force black during blank.
+vga_r_i <= r & r     when blankn = '1' else "000000";
+vga_g_i <= g & g     when blankn = '1' else "000000";
+vga_b_i <= b & b & b when blankn = '1' else "000000";
 
-scanlines <= "00";
+-- Derive the scandoubler clocks: clock_12 (clk_sys) and clock_6 (ce_x1) from a
+-- mod-6 counter clocked by clock_36 (see PORTING_SPEC 12.3.3).
+process (clock_36)
+begin
+    if rising_edge(clock_36) then
+        clock_12 <= '0';
+        if slot = "101" then
+            slot <= (others => '0');
+        else
+            slot <= std_logic_vector(unsigned(slot) + 1);
+        end if;
+        if slot = "100" or slot = "001" then
+            clock_6 <= not clock_6;
+        end if;
+        if slot = "100" or slot = "001" then
+            clock_12 <= '1';
+        end if;
+    end if;
+end process;
 
-scandoubler : entity work.scandoubler
+scandoubler_inst : scandoubler
 port map(
- clk_sys    => clock_12,
- scanlines  => scanlines,
- ce_x1      => clock_6,
- ce_x2      => std_logic'('1'),
- hs_in      => vga_hs_o,
- vs_in      => vga_vs_o,
- r_in       => video_ri,
- g_in       => video_gi,
- b_in       => video_bi,
- hs_out     => vga_hs,
- vs_out     => vga_vs,
- r_out      => vga_ro,
- g_out      => vga_go,
- b_out      => vga_bo
+ clk_sys   => clock_12,
+ scanlines => "00",
+ ce_x1     => clock_6,
+ ce_x2     => '1',
+ hs_in     => hsync,
+ vs_in     => vsync,
+ r_in      => vga_r_i,
+ g_in      => vga_g_i,
+ b_in      => vga_b_i,
+ hs_out    => hsync_o,
+ vs_out    => vsync_o,
+ r_out     => vga_r_o,
+ g_out     => vga_g_o,
+ b_out     => vga_b_o
 );
 
 -- adapt 6-bit scan-doubled output to 4bits/color
-vga_r <= vga_ro(5 downto 2);
-vga_g <= vga_go(5 downto 2);
-vga_b <= vga_bo(5 downto 2);
+vga_r <= vga_r_o(5 downto 2);
+vga_g <= vga_g_o(5 downto 2);
+vga_b <= vga_b_o(5 downto 2);
+vga_hs <= hsync_o;
+vga_vs <= vsync_o;
 
 -- get scancode from keyboard
+process (reset, clock_18)
+begin
+	if reset='1' then
+		clock_9  <= '0';
+	else
+		if rising_edge(clock_18) then
+				clock_9  <= not clock_9;
+		end if;
+	end if;
+end process;
+
 keyboard : entity work.io_ps2_keyboard
 port map (
-  clk       => clock_18, -- synchrounous clock with core
+  clk       => clock_9, -- synchronous clock with core
   kbd_clk   => ps2_clk,
   kbd_dat   => ps2_dat,
   interrupt => kbd_intr,
@@ -227,20 +266,21 @@ port map (
 -- translate scancode to joystick
 joystick : entity work.kbd_joystick
 port map (
-  clk           => clock_18, -- synchrounous clock with core
+  clk           => clock_9, -- synchronous clock with core
   kbdint        => kbd_intr,
   kbdscancode   => std_logic_vector(kbd_scancode),
   joyPCFRLDU    => kbd_joy
 );
 
 -- OR-merge the Atari-style joystick on JA with the PS/2 keyboard joystick.
--- JA physical map (matches the sibling ports): JA1=right, JA2=left, JA3=down, JA4=up, JA7=fire,
+-- JA physical map: JA1=right, JA2=left, JA3=down, JA4=up, JA7=fire,
 -- i.e. JA(0)=right, JA(1)=left, JA(2)=down, JA(3)=up, JA(4)=fire.
--- JA is active-low (pressed shorts to ground); invert so a press reads active-high, matching the
--- core's active-high input boundary and the keyboard path.
--- Coin/start are reachable from the joystick via fire+direction combos, OR-merged with keyboard.
-joyPCFRLDU(0) <= kbd_joy(0) or not JA(3);                 -- up    (JA4)
-joyPCFRLDU(1) <= kbd_joy(1) or not JA(2);                 -- down  (JA3)
+-- JA is active-low (pressed shorts to ground); invert so a press reads active-high,
+-- matching the core's active-high input boundary and the keyboard path.
+-- Galaga core takes left/right/fire only (bits 2/3/4); coin=7, start1=5, start2=6.
+-- Coin/start reachable from the joystick via fire+direction combos.
+joyPCFRLDU(0) <= '0';
+joyPCFRLDU(1) <= '0';
 joyPCFRLDU(2) <= kbd_joy(2) or not JA(1);                 -- left  (JA2)
 joyPCFRLDU(3) <= kbd_joy(3) or not JA(0);                 -- right (JA1)
 joyPCFRLDU(4) <= kbd_joy(4) or not JA(4);                 -- fire  (JA7)
@@ -249,10 +289,10 @@ joyPCFRLDU(6) <= kbd_joy(6) or (not JA(4) and not JA(0)); -- start2 = fire+right
 joyPCFRLDU(7) <= kbd_joy(7) or (not JA(4) and not JA(3)); -- coin   = fire+up
 
 -- pwm sound output
-process(clock_18)
+process(clock_18)  -- same clock as the DE10 top drove the PWM accumulator
 begin
   if rising_edge(clock_18) then
-    pwm_accumulator  <=  std_logic_vector(unsigned('0' & pwm_accumulator(11 downto 0)) + unsigned('0' & audio & '0'));
+    pwm_accumulator  <=  std_logic_vector(unsigned('0' & pwm_accumulator(11 downto 0)) + unsigned(audio & "000"));
   end if;
 end process;
 
@@ -263,7 +303,7 @@ O_PMODAMP2_GAIN  <= sw(15);  -- gain: 0 = 12 dB, 1 = 6 dB
 end struct;
 EOF
 
-# Emit git-style patch (matches the pooyan/time_pilot_de10_lite_to_basys3.patch convention).
+# Emit git-style patch (matches the *_de10_lite_to_basys3.patch convention).
 {
   printf 'diff --git a/vhdl_galaga_rev_0_3_2018_05_06/rtl_dar/galaga_de10_lite.vhd b/vhdl_galaga_rev_0_3_2018_05_06/rtl_dar/galaga_de10_lite.vhd\n'
   diff -u --label "a/vhdl_galaga_rev_0_3_2018_05_06/rtl_dar/galaga_de10_lite.vhd" \

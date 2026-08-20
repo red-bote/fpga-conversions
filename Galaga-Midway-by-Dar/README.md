@@ -76,6 +76,19 @@ script.
 
 machine ROMs are copyrighted — never commit or redistribute them.
 
+## Fixing the background-palette XOR width
+
+The pristine Dar core (`rtl_dar/galaga.vhd`) has a synthesis-shape bug in `bgpalette_addr`
+(around line 521): the `xor` is applied after the `'1'`/`'0'` prefix bit is already concatenated
+onto `hcnt(1 downto 0)`, giving it a 3-bit left operand against `flip_h & flip_h`'s 2 bits.
+`galaga_bgpalette_xor_length_fix.patch` parenthesizes `hcnt(1 downto 0) xor (flip_h & flip_h)`
+first (both 2-bit) and concatenates the prefix bit onto the result. Applied automatically by
+`contrib/tools/setup_galaga.sh`. Verify it took:
+
+```
+grep -n "xor (flip_h & flip_h))))" vhdl_galaga_rev_0_3_2018_05_06/rtl_dar/galaga.vhd
+```
+
 ## Applying the credit-mode fix
 
 The pristine Dar core (`vhdl_galaga_rev_0_3_2018_05_06/rtl_dar/galaga.vhd`) has a
