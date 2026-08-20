@@ -2,7 +2,9 @@
 # Download, extract, and patch the Galaga Dar source archive, then chain
 # into the rom-prep script.
 #
-# 1. Download vhdl_galaga_rev_0_3_2018_05_06.zip from SourceForge.
+# 1. Fetch vhdl_galaga_rev_0_3_2018_05_06.zip from SourceForge into the cache
+#    dloads/ dir (gitignored). Reuses the cached copy if its SHA-256 matches the
+#    embedded hash; re-downloads if missing, tampered, or compromised.
 # 2. Extract it into the repo root as vhdl_galaga_rev_0_3_2018_05_06/.
 # 3. Apply any fix patches idempotently (patch -p1 --forward).
 #    Glob covers both contrib/<dir>/code/*.patch (e.g. contrib/basys3/code/)
@@ -23,17 +25,35 @@ ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 SRC_DIR="$ROOT/vhdl_galaga_rev_0_3_2018_05_06"
 
 URL="https://sourceforge.net/projects/darfpga/files/Software%20VHDL/galaga/vhdl_galaga_rev_0_3_2018_05_06.zip/download"
+EXPECTED_SHA256="4d51c8ca31a7ee9ea9f475b818bef625e739f9faa07f66ed54888d05d25d611e"
 
-WORK=/tmp/galaga_setup
-ZIP="$WORK/vhdl_galaga_rev_0_3_2018_05_06.zip"
+DLOAD_DIR="$ROOT/dloads"
+ZIP="$DLOAD_DIR/vhdl_galaga_rev_0_3_2018_05_06.zip"
 
 step() { printf '\n==> %s\n' "$1"; }
 
-rm -rf "$WORK"
-mkdir -p "$WORK"
+fetch_zip() {
+    mkdir -p "$DLOAD_DIR"
+    if [ -f "$ZIP" ]; then
+        actual=$(sha256sum "$ZIP" | cut -d' ' -f1)
+        if [ "$actual" = "$EXPECTED_SHA256" ]; then
+            step "Using cached source archive (SHA-256 verified)"
+            return
+        fi
+        echo "WARNING: cached archive hash mismatch; re-downloading" >&2
+        rm -f "$ZIP"
+    fi
+    wget -O "$ZIP" "$URL"
+    actual=$(sha256sum "$ZIP" | cut -d' ' -f1)
+    if [ "$actual" != "$EXPECTED_SHA256" ]; then
+        echo "ERROR: downloaded archive failed SHA-256 integrity check" >&2
+        rm -f "$ZIP"
+        exit 1
+    fi
+}
 
-step "1/4 Downloading source archive"
-wget -O "$ZIP" "$URL"
+step "1/4 Fetching source archive (cached or verified)"
+fetch_zip
 
 step "2/4 Extracting vhdl_galaga_rev_0_3_2018_05_06/ into repo root"
 mkdir -p "$SRC_DIR"
@@ -52,8 +72,6 @@ done
 
 step "4/4 Running rom-prep"
 "$ROOT/contrib/tools/prep_roms.sh"
-
-rm -rf "$WORK"
 
 echo
 echo "Setup complete. Source tree in:"

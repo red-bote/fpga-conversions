@@ -1,8 +1,11 @@
 #!/bin/bash
 # Initial project setup for the Pooyan Basys3 port.
 #
-# 1. Download & extract the upstream Dar source archive (vhdl_pooyan_rev_0_2_2020_04_26.zip)
-#    into the repo root as vhdl_pooyan_rev_0_2_2020_04_26/.
+# 1. Fetch the upstream Dar source archive (vhdl_pooyan_rev_0_2_2020_04_26.zip)
+#    from SourceForge into the cache dloads/ dir (gitignored). Reuses the
+#    cached copy if its SHA-256 matches the embedded hash; re-downloads if
+#    missing, tampered, or compromised. Extract into the repo root as
+#    vhdl_pooyan_rev_0_2_2020_04_26/.
 # 2. Apply contrib/basys3/code/pooyan_t80_xor_width.patch to rtl_t80_350/T80.vhd (idempotent).
 # 3. Build make_vhdl_prom from source on the host (gcc) and generate make_pooyan_proms.sh
 #    from make_pooyan_proms.bat.
@@ -22,18 +25,36 @@ PROM_DIR="$SRC_DIR/tools/pooyan_unzip"
 TOOLS_SRC="$SRC_DIR/tools/tools_prom_src/src"
 
 URL="https://sourceforge.net/projects/darfpga/files/Software%20VHDL/pooyan/vhdl_pooyan_rev_0_2_2020_04_26.zip/download"
+EXPECTED_SHA256="cfa8408a878589f080ff3cd75b53d8e5271896d368cdc3ace1cbfb621f2f3169"
 ROMZIP="${ROMZIP:-$HOME/roms/pooyan.zip}"
 
-WORK=/tmp/pooyan_setup
-ZIP="$WORK/vhdl_pooyan_rev_0_2_2020_04_26.zip"
+DLOAD_DIR="$ROOT/dloads"
+ZIP="$DLOAD_DIR/vhdl_pooyan_rev_0_2_2020_04_26.zip"
 
 step() { printf '\n==> %s\n' "$1"; }
 
-rm -rf "$WORK"
-mkdir -p "$WORK"
+fetch_zip() {
+    mkdir -p "$DLOAD_DIR"
+    if [ -f "$ZIP" ]; then
+        actual=$(sha256sum "$ZIP" | cut -d' ' -f1)
+        if [ "$actual" = "$EXPECTED_SHA256" ]; then
+            step "Using cached source archive (SHA-256 verified)"
+            return
+        fi
+        echo "WARNING: cached archive hash mismatch; re-downloading" >&2
+        rm -f "$ZIP"
+    fi
+    wget -O "$ZIP" "$URL"
+    actual=$(sha256sum "$ZIP" | cut -d' ' -f1)
+    if [ "$actual" != "$EXPECTED_SHA256" ]; then
+        echo "ERROR: downloaded archive failed SHA-256 integrity check" >&2
+        rm -f "$ZIP"
+        exit 1
+    fi
+}
 
-step "1/6 Downloading source archive"
-wget -O "$ZIP" "$URL"
+step "1/6 Fetching source archive (cached or verified)"
+fetch_zip
 
 step "2/6 Extracting vhdl_pooyan_rev_0_2_2020_04_26/ into repo root"
 mkdir -p "$SRC_DIR"
@@ -73,8 +94,6 @@ mkdir -p "$CONSTRS_IMPORT" "$SOURCES_IMPORT"
 cp -f "$CONTRIB/vivado/pooyan_basys3.xpr" "$XPR_DIR/pooyan_basys3.xpr"
 cp -f "$CONTRIB/vivado/pooyan_basys3.xdc"  "$CONSTRS_IMPORT/Basys-3-Master.xdc"
 cp -f "$CONTRIB/code/vga_scandoubler.v"  "$SOURCES_IMPORT/vga_scandoubler.v"
-
-rm -rf "$WORK"
 
 echo
 echo "Setup complete. Files in place:"

@@ -82,6 +82,12 @@ Confirmed against the pristine `rtl_dar/galaga_de10_lite.vhd` top:
   `hs_in`/`vs_in` from the core's `video_hs`/`video_vs` — is specified in §12, treated as the
   authoritative target for this redo. Clock inputs
   (`clk_sys`=`clock_12`, `ce_x1`=`clock_6`, `ce_x2`='1', `scanlines`="00") per §2 above.
+- **Display-mode switch** via `sw(13)` in `galaga_basys3.vhd` (active, not commented):
+  - `sw(13)=0` (default): 31 kHz VGA — the scan-doubled 6-bit RGB narrowed to 4 bits, `hsync_o`/`vsync_o`.
+  - `sw(13)=1`: 15 kHz TV — native core RGB padded to 4 bits (`r&'0'`, `g&'0'`, `b&"00"`, blanked on
+    `blankn`), `vga_hs <= csync`, `vga_vs <= '1'`. Requires a 15 kHz RGB monitor or an RGB→composite/component
+    converter; a standard VGA LCD will not sync. The scandoubler and mod-6 counter keep running in this mode
+    (not clock-gated). See §12.6.
 
 ## 6. Audio (mono PWM on PmodAMP2)
 
@@ -385,10 +391,12 @@ video_b(1:0), video_blankn --------> r, g, b, blankn
 
 ### 12.6 Signals not connected to the scan doubler
 
-- `video_csync` (composite sync) from the `galaga` core: unused, not routed
-  anywhere in the top level.
-- A commented-out (non-synthesized) alternate output block in
-  `galaga_basys3.vhd` would have driven `vga_hs` from `csync` directly and
-  held `vga_vs` at constant `'1'`, referencing an unused `tv15Khz_mode`
-  signal. This block does not connect to the `scandoubler_inst` path and has
-  no effect on the active design.
+- `video_csync` (composite sync) from the `galaga` core: not routed to the
+  scan doubler, but used by the **TV mode** display switch in the top level.
+- The active `sw(13)` mode switch selects between the scan-doubled VGA path
+  (above) and a native 15 kHz TV path that bypasses `scandoubler_inst`:
+  - `sw(13)='1'` → `vga_r/r/g/b` from native core RGB padded to 4 bits and
+    blanked on `blankn`; `vga_hs <= csync`; `vga_vs <= '1'`.
+  - `sw(13)='0'` → the scan-doubled path (`r_out(5:2)`, `hsync_o`, `vsync_o`).
+  This mirrors the DE10-lite original's intended-but-commented
+  `tv15Khz_mode` design (`vga_hs <= csync when tv15Khz_mode = '1' else hsync`).

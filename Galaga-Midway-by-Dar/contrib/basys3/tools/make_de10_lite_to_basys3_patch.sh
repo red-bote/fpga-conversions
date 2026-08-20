@@ -45,7 +45,8 @@ cat > "$TARGET" <<'EOF'
 --  - 100 MHz board oscillator, clk_wiz_0 MMCM derives 36 MHz
 --  - Atari-style joystick on JA, OR-merged with PS/2 keyboard (JB)
 --  - Mono PWM audio on PmodAMP2 (JC); sw14 = shutdown, sw15 = gain select
---  - 31 kHz VGA on the Basys3 VGA connector via the imported MiST scandoubler
+--  - 31 kHz VGA on the Basys3 VGA connector via the imported MiST scandoubler;
+--    sw(13) switches to 15 kHz TV (native RGB + composite sync on HS)
 --  - btnC = reset
 ---------------------------------------------------------------------------------
 -- Educational use only
@@ -235,12 +236,21 @@ port map(
  b_out     => vga_b_o
 );
 
--- adapt 6-bit scan-doubled output to 4bits/color
-vga_r <= vga_r_o(5 downto 2);
-vga_g <= vga_g_o(5 downto 2);
-vga_b <= vga_b_o(5 downto 2);
-vga_hs <= hsync_o;
-vga_vs <= vsync_o;
+-- Display mode switch via sw(13):
+--   0 = 31 kHz VGA (scan-doubled 6-bit RGB adapted to 4bits/color)
+--   1 = 15 kHz TV  (native core RGB padded to 4bits, composite sync on HS,
+--       VS held high -- requires a 15 kHz RGB monitor or RGB->composite converter)
+vga_r <= r & '0'             when sw(13) = '1' and blankn = '1' else
+         vga_r_o(5 downto 2) when sw(13) = '0'                  else
+         "0000";
+vga_g <= g & '0'             when sw(13) = '1' and blankn = '1' else
+         vga_g_o(5 downto 2) when sw(13) = '0'                  else
+         "0000";
+vga_b <= b & "00"            when sw(13) = '1' and blankn = '1' else
+         vga_b_o(5 downto 2) when sw(13) = '0'                  else
+         "0000";
+vga_hs <= csync   when sw(13) = '1' else hsync_o;
+vga_vs <= '1'     when sw(13) = '1' else vsync_o;
 
 -- get scancode from keyboard
 process (reset, clock_18)
