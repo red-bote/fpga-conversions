@@ -15,17 +15,20 @@ source of truth for that machine's design and build.
 and `contrib/basys3/` build scripts. Use it as the template when bringing up the
 other machines. `Time-Pilot-by-Dar/` and `Galaga-Midway-by-Dar/` are also
 complete, hardware-verified ports (Makefile + `contrib/` scripts +
-`PORTING_SPEC.md`).
+`PORTING_SPEC.md`). `Bagman-FPGA-Dar/` carries the full tooling chain as well
+(XDC, clk-wiz generator, top-level patch and bitstream scripts) and builds
+cleanly through `write_bitstream` with timing met; it has been verified
+working on hardware.
 
 Every machine directory now carries a scripted setup: `contrib/tools/setup_<game>.sh`
 (fetches the Dar archive into a gitignored `dloads/` cache with an embedded
 SHA-256 check, extracts it, applies any synthesis-fix patches) chaining into
 `contrib/tools/prep_roms.sh` (compiles `make_vhdl_prom`, converts the
 `make_<game>_proms.bat`, stages the romset(s), generates the PROM VHDL), plus a
-`Makefile` wrapping both. The seven machines without a full Basys 3 bring-up yet
-(Bagman, Berzerk, Burnin' Rubber, Kick, Popeye, Sky Skipper, Solar Fox)
+`Makefile` wrapping both. The six machines without a full Basys 3 bring-up yet
+(Berzerk, Burnin' Rubber, Kick, Popeye, Sky Skipper, Solar Fox)
 additionally ship a placeholder `contrib/basys3/vivado/create_project.sh`; their
-`.xpr`, XDC, top-level wrapper and clk-wiz scripts still need to be created.
+XDC, top-level wrapper and clk-wiz scripts still need to be created.
 
 ## Machine index
 

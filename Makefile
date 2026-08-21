@@ -15,6 +15,7 @@
 GALAGA      := Galaga-Midway-by-Dar
 POOYAN      := Pooyan-by-Dar
 TIME_PILOT  := Time-Pilot-by-Dar
+BAGMAN      := Bagman-FPGA-Dar
 
 # Bare `make` prints help instead of running a build.
 .DEFAULT_GOAL := help
@@ -91,13 +92,40 @@ all-time-pilot:
 clean-time-pilot:
 	$(MAKE) -C "$(TIME_PILOT)" clean
 
+# ---- Bagman ----
+setup-bagman:
+	$(MAKE) -C "$(BAGMAN)" setup
+
+create-prj-bagman:
+	$(MAKE) -C "$(BAGMAN)" create_prj
+
+clk-wiz-bagman:
+	$(MAKE) -C "$(BAGMAN)" clk_wiz
+
+patch-bagman:
+	$(MAKE) -C "$(BAGMAN)" patch
+
+synth-bagman:
+	$(MAKE) -C "$(BAGMAN)" synth
+
+bitstream-bagman:
+	$(MAKE) -C "$(BAGMAN)" bitstream
+
+all-bagman:
+	$(MAKE) -C "$(BAGMAN)" all
+
+clean-bagman:
+	$(MAKE) -C "$(BAGMAN)" clean
+
 .PHONY: help setup-galaga create-prj-galaga clk-wiz-galaga patch-galaga \
         synth-galaga bitstream-galaga all-galaga clean-galaga \
         setup-pooyan clk-wiz-pooyan patch-pooyan synth-pooyan \
         bitstream-pooyan all-pooyan clean-pooyan \
         setup-time-pilot create-prj-time-pilot clk-wiz-time-pilot \
         patch-time-pilot synth-time-pilot bitstream-time-pilot \
-        all-time-pilot clean-time-pilot
+        all-time-pilot clean-time-pilot \
+        setup-bagman create-prj-bagman clk-wiz-bagman patch-bagman \
+        synth-bagman bitstream-bagman all-bagman clean-bagman
 
 help:
 	@echo "Top-level port driver. Each step delegates to the machine's own Makefile."
@@ -107,6 +135,7 @@ help:
 	@echo "  Galaga      : setup create-prj clk-wiz patch synth bitstream all clean"
 	@echo "  Pooyan      : setup          clk-wiz patch synth bitstream all clean"
 	@echo "  Time-Pilot  : setup create-prj clk-wiz patch synth bitstream all clean"
+	@echo "  Bagman      : setup create-prj clk-wiz patch synth bitstream all clean"
 	@echo
 	@echo "Examples:"
 	@echo "  make setup-galaga      make synth-time-pilot      make bitstream-pooyan"

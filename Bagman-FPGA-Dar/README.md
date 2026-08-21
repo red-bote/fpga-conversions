@@ -12,8 +12,9 @@ archive for the original Dar release notes.
 
 ## Features supported
 
-- **Video**: 31 kHz progressive VGA. Scan doubling is built into the core
-  (`tv15Khz_mode = '0'` fixed — no 15 kHz TV mode on this port).
+- **Video**: display mode selected by sw(13): 0 = 31 kHz progressive VGA
+  (scan doubling built into the core), 1 = 15 kHz TV mode (native rate,
+  composite sync on HS — needs a 15 kHz monitor or RGB→composite converter).
 - **Sound**: mono PWM audio on PmodAMP2.
 - **Controls**: PS/2 keyboard + JA joystick (OR-merged), btnC = reset.
 
@@ -36,14 +37,13 @@ JA joystick (active-low, switch to GND):
 |------------------|--------------|----------|
 | clk (W5, 100 MHz) | `clk` | clock into `clk_wiz_0` MMCM |
 | btnC | `btnC` | reset (active-high) |
-| btnU/btnL/btnR/btnD | `btnU/L/R/D` | declared, unused (reserved) |
 | sw(15) | `O_PMODAMP2_GAIN` | AMP gain: 0 = 12 dB, 1 = 6 dB |
 | sw(14) | `O_PMODAMP2_SHUTD` | AMP shutdown: 0 = off, 1 = on |
+| sw(13) | — | display mode: 0 = 31 kHz VGA, 1 = 15 kHz TV (csync on HS) |
 | JB1 / JB3 | `ps2_dat` / `ps2_clk` | PS/2 keyboard |
 | JA1-JA4, JA7 | `JA(0..4)` | joystick (active-low) |
 | JC (PmodAMP2) | `O_PMODAMP2_AIN` | PWM audio (JC1=AIN, JC2=GAIN, JC4=SHUTD) |
 | VGA | `vgaRed/vgaGreen/vgaBlue(3:0)`, `vgaHsync`, `vgaVsync` | 4-4-4 RGB, 31 kHz |
-| LEDs | `led(15:0)` | present (driven 0) |
 
 ## Scripted setup
 
@@ -55,6 +55,13 @@ extracts it as `vhdl_bagman_rev_0_1_2018_06_05/`, applies
 compile `make_vhdl_prom`, convert `make_bagman_proms.bat`, stage the romset from
 `$ROMZIP` (default `~/roms/bagman.zip`) and generate the PROM VHDL. Run it via
 `make setup`.
+
+The remaining steps are wrapped by the machine `Makefile`: `make create_prj`
+(copies `bagman_basys3.xpr` and `Basys-3-Master.xdc` into the extracted tree),
+`make clk_wiz` (generates the `clk_wiz_0` MMCM IP wrappers),
+`make patch` (regenerates `bagman_de10_lite_to_basys3.patch` and places
+`bagman_basys3.vhd`), then `make synth` / `make bitstream` (Vivado batch runs;
+logs stay outside the repo).
 
 ## ROM set required
 
