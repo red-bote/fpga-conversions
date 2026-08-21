@@ -2,10 +2,11 @@
 
 Kick (Midway MCR, 1981) by Dar (`darfpga@aol.fr`,
 http://darfpga.blogspot.fr). Basys 3 (Artix-7) port by Red~Bote. See
-`readme-dar.txt` for the original Dar release notes.
+`README.txt` in the extracted source archive for the original Dar release
+notes.
 
-- Vivado 2020.2 project: `basys3/kickman_basys.xpr` (top entity
-  `kickman_basys3`; note the project dir has no trailing `3`)
+- Vivado 2020.2 project: `basys3/kick_basys3.xpr` (top entity
+  `kick_basys3`)
 - Core clock: 40 MHz (from the 100 MHz Basys 3 oscillator via `clk_wiz_0`)
 - `clk_wiz_0` Clocking Wizard (MMCM, 100 MHz in): `clk_out1` = 40.000 MHz;
   reset active-high (btnC), `locked` used. Solved MMCM: `DIVCLK_DIVIDE=1`,
@@ -49,6 +50,16 @@ JA joystick (active-low, switch to GND):
 | JC (PmodAMP2) | `O_PMODAMP2_AIN` | PWM audio (left channel; JC1=AIN, JC2=GAIN, JC4=SHUTD) |
 | VGA | `vgaRed/vgaGreen/vgaBlue(3:0)`, `vgaHsync`, `vgaVsync` | 4-4-4 RGB, 31 kHz |
 | LEDs | `led(15:0)` | present |
+
+## Scripted setup
+
+`contrib/tools/setup_kick.sh` automates the manual steps below: it fetches the
+Dar archive into the gitignored `dloads/` cache (reused when its SHA-256 matches
+the hash embedded in the script; re-downloaded when missing or tampered),
+extracts it as `vhdl_kick_rev_0_2_2019_11_22/`, then runs
+`contrib/tools/prep_roms.sh` to compile `make_vhdl_prom`, convert
+`make_kick_proms.bat`, stage the romset from `$ROMZIP` (default
+`~/roms/kick.zip`) and generate the PROM VHDL. Run it via `make setup`.
 
 ## ROM set required
 

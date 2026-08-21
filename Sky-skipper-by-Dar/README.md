@@ -2,7 +2,8 @@
 
 Sky Skipper (Nintendo, 1981) by Dar (`darfpga@aol.fr`,
 http://darfpga.blogspot.fr). Basys 3 (Artix-7) port by Red~Bote. See
-`readme-dar.txt` for the original Dar release notes.
+`README.txt` in the extracted source archive for the original Dar release
+notes.
 
 - Vivado 2020.2 project: `basys3/sky_skipper_basys3.xpr` (top entity
   `sky_skipper_basys3`)
@@ -47,6 +48,16 @@ JA joystick (active-low, switch to GND):
 | JC (PmodAMP2) | `O_PMODAMP2_AIN` | PWM audio (JC1=AIN, JC2=GAIN, JC4=SHUTD) |
 | VGA | `vgaRed/vgaGreen/vgaBlue(3:0)`, `vgaHsync`, `vgaVsync` | 4-4-4 RGB, 31 kHz |
 | LEDs | `led(15:0)` | present |
+
+## Scripted setup
+
+`contrib/tools/setup_sky_skipper.sh` automates the manual steps below: it
+fetches the Dar archive into the gitignored `dloads/` cache (reused when its
+SHA-256 matches the hash embedded in the script; re-downloaded when missing or
+tampered), extracts it as `vhdl_sky_skipper_rev_01_2020_01_28/`, then runs
+`contrib/tools/prep_roms.sh` to compile `make_vhdl_prom`, convert
+`make_sky_skipper_proms.bat`, stage the romset from `$ROMZIP` (default
+`~/roms/skyskipr.zip`) and generate the PROM VHDL. Run it via `make setup`.
 
 ## ROM set required
 

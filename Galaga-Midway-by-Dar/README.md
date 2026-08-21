@@ -2,7 +2,8 @@
 
 Galaga (Namco/Midway, 1981) by Dar (`darfpga@aol.fr`,
 http://darfpga.blogspot.fr). Basys 3 (Artix-7) port by Red~Bote. See
-`readme-dar.txt` for the original Dar release notes.
+`README.txt` in the extracted source archive for the original Dar release
+notes.
 
 - Vivado 2020.2 project: `basys3/galaga_basys3.xpr` (top entity `galaga_basys3`)
 - Core clock: 36 MHz (from the 100 MHz Basys 3 oscillator via `clk_wiz_0`)

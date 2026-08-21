@@ -1,12 +1,13 @@
 # Default target: build the whole scripted Basys3 port tree.
 SCRIPTS := contrib/basys3/tools
+TOOLS := contrib/tools
 
 .PHONY: all setup clk_wiz clean patch synth bitstream
 
 all: setup clk_wiz patch
 
 setup:
-	$(SCRIPTS)/setup_pooyan_basys3.sh
+	$(TOOLS)/setup_pooyan.sh
 
 # Regenerate pooyan_de10_lite_to_basys3.patch and pooyan_basys3.vhd top level.
 patch: setup

@@ -1,10 +1,10 @@
 # Popeye-by-Dar (Basys 3 port)
 
 Popeye (Nintendo, 1982) by Dar (`darfpga@aol.fr`, http://darfpga.blogspot.fr).
-Basys 3 (Artix-7) port by Red~Bote. See `readme-dar.txt` for the original
-Dar release notes.
+Basys 3 (Artix-7) port by Red~Bote. See `README.txt` in the extracted source
+archive for the original Dar release notes.
 
-- Vivado 2020.2 project: `popeye_xc7/popeye_xc7.xpr` (top entity `rtl_top`)
+- Vivado 2020.2 project: `basys3/popeye_basys3.xpr` (top entity `popeye_basys3`)
 - Core clock: 40.32 MHz (from the 100 MHz Basys 3 oscillator via `clk_wiz_0`)
 - `clk_wiz_0` Clocking Wizard (MMCM, 100 MHz in): `clk_out1` = 40.320 MHz;
   reset active-high (btnC), `locked` used. Solved MMCM: `DIVCLK_DIVIDE=5`,
@@ -46,6 +46,18 @@ JA joystick (active-low, switch to GND):
 | JC (PmodAMP2) | `O_PMODAMP2_AIN` | PWM audio (JC1=AIN, JC2=GAIN, JC4=SHUTD) |
 | VGA | `vgaRed/vgaGreen/vgaBlue(3:0)`, `vgaHsync`, `vgaVsync` | 4-4-4 RGB, 31 kHz |
 | LEDs | `led(15:0)` | present |
+
+## Scripted setup
+
+`contrib/tools/setup_popeye.sh` automates the manual steps below: it fetches the
+Dar archive into the gitignored `dloads/` cache (reused when its SHA-256 matches
+the hash embedded in the script; re-downloaded when missing or tampered),
+extracts it as `vhdl_popeye_rev_0_3_2020_01_27/`, applies
+`contrib/code/popeye_linmix_sensitivity.patch`, then runs
+`contrib/tools/prep_roms.sh` to compile `make_vhdl_prom`, convert
+`make_popeye_proms.bat`, stage the romsets from `$ROMZIP`/`$ROMZIP2` (defaults
+`~/roms/popeye.zip` and `~/roms/popeyeu.zip`) and generate the PROM VHDL. Run it
+via `make setup`.
 
 ## ROM set required
 

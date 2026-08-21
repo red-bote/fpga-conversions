@@ -2,10 +2,11 @@
 
 Solar Fox (Bally Midway, 1981) by Dar (`darfpga@aol.fr`,
 http://darfpga.blogspot.fr). Basys 3 (Artix-7) port by Red~Bote. See
-`readme-dar.txt` for the original Dar release notes.
+`README.txt` in the extracted source archive for the original Dar release
+notes.
 
-- Vivado 2020.2 project: `basys3/solarfox_basys3.xpr` (top entity
-  `solarfox_basys3`)
+- Vivado 2020.2 project: `basys3/solar_fox_basys3.xpr` (top entity
+  `solar_fox_basys3`)
 - Core clock: 40 MHz (from the 100 MHz Basys 3 oscillator via `clk_wiz_0`)
 - `clk_wiz_0` Clocking Wizard (MMCM, 100 MHz in): `clk_out1` = 40.000 MHz;
   reset active-high (btnC), `locked` used. Solved MMCM: `DIVCLK_DIVIDE=1`,
@@ -48,6 +49,16 @@ JA joystick (active-low, switch to GND):
 | JC (PmodAMP2) | `O_PMODAMP2_AIN` | PWM audio (left channel; JC1=AIN, JC2=GAIN, JC4=SHUTD) |
 | VGA | `vgaRed/vgaGreen/vgaBlue(3:0)`, `vgaHsync`, `vgaVsync` | 4-4-4 RGB, 31 kHz |
 | LEDs | `led(15:0)` | present |
+
+## Scripted setup
+
+`contrib/tools/setup_solar_fox.sh` automates the manual steps below: it fetches
+the Dar archive into the gitignored `dloads/` cache (reused when its SHA-256
+matches the hash embedded in the script; re-downloaded when missing or
+tampered), extracts it as `vhdl_solar_fox_rev_0_1_2019_11_22/`, then runs
+`contrib/tools/prep_roms.sh` to compile `make_vhdl_prom`, convert
+`make_solar_fox_proms.bat`, stage the romset from `$ROMZIP` (default
+`~/roms/solarfox.zip`) and generate the PROM VHDL. Run it via `make setup`.
 
 ## ROM set required
 

@@ -1,0 +1,92 @@
+#!/bin/bash
+# Download, extract, and patch the Pooyan Dar source archive, copy the ported
+# assets, then chain into the rom-prep script.
+#
+# 1. Fetch vhdl_pooyan_rev_0_2_2020_04_26.zip from SourceForge into the cache
+#    dloads/ dir (gitignored). Reuses the cached copy if its SHA-256 matches the
+#    embedded hash; re-downloads if missing, tampered, or compromised.
+# 2. Extract it into the repo root as vhdl_pooyan_rev_0_2_2020_04_26/.
+# 3. Apply any fix patches idempotently (patch -p1 --forward).
+#    Glob covers both contrib/<dir>/code/*.patch and contrib/code/*.patch.
+#    Excludes *_de10_lite_to_basys3.patch: that file is a record of the
+#    top-level rewrite (authored by make_de10_lite_to_basys3_patch.sh), not a
+#    fix to apply to the pristine tree.
+# 4. Copy the ported assets (xpr/xdc/scandoubler) from contrib/basys3/ into the
+#    project tree.
+# 5. Run contrib/tools/prep_roms.sh (compile make_vhdl_prom, convert .bat,
+#    unzip romset, generate PROM VHDL).
+#
+# clk_wiz_0 IP generation and the pooyan_basys3.vhd top level are separate
+# steps. Roms and the generated PROM VHDL stay local (never distributed).
+
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+CONTRIB="$ROOT/contrib/basys3"
+SRC_DIR="$ROOT/vhdl_pooyan_rev_0_2_2020_04_26"
+
+URL="https://sourceforge.net/projects/darfpga/files/Software%20VHDL/pooyan/vhdl_pooyan_rev_0_2_2020_04_26.zip/download"
+EXPECTED_SHA256="cfa8408a878589f080ff3cd75b53d8e5271896d368cdc3ace1cbfb621f2f3169"
+
+DLOAD_DIR="$ROOT/dloads"
+ZIP="$DLOAD_DIR/vhdl_pooyan_rev_0_2_2020_04_26.zip"
+
+step() { printf '\n==> %s\n' "$1"; }
+
+fetch_zip() {
+    mkdir -p "$DLOAD_DIR"
+    if [ -f "$ZIP" ]; then
+        actual=$(sha256sum "$ZIP" | cut -d' ' -f1)
+        if [ "$actual" = "$EXPECTED_SHA256" ]; then
+            step "Using cached source archive (SHA-256 verified)"
+            return
+        fi
+        echo "WARNING: cached archive hash mismatch; re-downloading" >&2
+        rm -f "$ZIP"
+    fi
+    wget -O "$ZIP" "$URL"
+    actual=$(sha256sum "$ZIP" | cut -d' ' -f1)
+    if [ "$actual" != "$EXPECTED_SHA256" ]; then
+        echo "ERROR: downloaded archive failed SHA-256 integrity check" >&2
+        rm -f "$ZIP"
+        exit 1
+    fi
+}
+
+step "1/5 Fetching source archive (cached or verified)"
+fetch_zip
+
+step "2/5 Extracting vhdl_pooyan_rev_0_2_2020_04_26/ into repo root"
+mkdir -p "$SRC_DIR"
+unzip -o "$ZIP" -d "$ROOT"
+
+step "3/5 Applying fix patches (contrib/*/code/*.patch and contrib/code/*.patch)"
+for p in "$ROOT"/contrib/*/code/*.patch "$ROOT"/contrib/code/*.patch; do
+    [ -e "$p" ] || continue
+    case "$p" in
+        *_de10_lite_to_basys3.patch) continue ;;
+    esac
+    echo "==> applying $p"
+    patch -p1 --forward < "$p"
+done
+
+step "4/5 Copying ported assets into the project"
+XPR_DIR="$SRC_DIR/basys3/pooyan_basys3"
+CONSTRS_IMPORT="$XPR_DIR/pooyan_basys3.srcs/constrs_1/imports/digilent-xdc-master"
+SOURCES_IMPORT="$XPR_DIR/pooyan_basys3.srcs/sources_1/imports/deca"
+
+mkdir -p "$CONSTRS_IMPORT" "$SOURCES_IMPORT"
+cp -f "$CONTRIB/vivado/pooyan_basys3.xpr" "$XPR_DIR/pooyan_basys3.xpr"
+cp -f "$CONTRIB/vivado/pooyan_basys3.xdc"  "$CONSTRS_IMPORT/Basys-3-Master.xdc"
+cp -f "$CONTRIB/code/vga_scandoubler.v"  "$SOURCES_IMPORT/vga_scandoubler.v"
+
+step "5/5 Running rom-prep"
+"$ROOT/contrib/tools/prep_roms.sh"
+
+echo
+echo "Setup complete. Files in place:"
+ls -l "$XPR_DIR/pooyan_basys3.xpr"
+ls -l "$CONSTRS_IMPORT/Basys-3-Master.xdc"
+ls -l "$SOURCES_IMPORT/vga_scandoubler.v"
+echo
+echo "Remaining steps (separate): make_clk_wiz_0.sh and creating pooyan_basys3.vhd top level."

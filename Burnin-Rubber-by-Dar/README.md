@@ -2,7 +2,8 @@
 
 Burnin' Rubber (Data East, 1982) by Dar (`darfpga@aol.fr`,
 http://darfpga.blogspot.fr). Basys 3 (Artix-7) port by Red~Bote. See
-`readme-dar.txt` for the original Dar release notes.
+`README.txt` in the extracted source archive for the original Dar release
+notes.
 
 - Vivado 2020.2 project: `basys3/burnin_rubber_basys3.xpr` (top entity
   `burnin_rubber_basys3`)
@@ -16,6 +17,9 @@ http://darfpga.blogspot.fr). Basys 3 (Artix-7) port by Red~Bote. See
 
 - **Video**: 31 kHz progressive VGA via an imported MiST scandoubler
   (`imports/mist/scandoubler.v`). No 15 kHz TV mode on this port.
+- **Scan doubler source**: the imported scandoubler is from
+  https://github.com/DECAfpga/Arcade_Galaga/blob/main/mist/scandoubler.v
+- **Scan doubler wiring**: see `PORTING_SPEC.md`.
 - **Sound**: mono PWM audio on PmodAMP2.
 - **Controls**: PS/2 keyboard + JA joystick (OR-merged), btnC = reset.
 
@@ -51,6 +55,16 @@ JA joystick (active-low, switch to GND):
 
 - Bottommost horizontal scanline is not visible (would be on the left with a
   rotated monitor).
+
+## Scripted setup
+
+`contrib/tools/setup_burnin_rubber.sh` automates the manual steps below: it
+fetches the Dar archive into the gitignored `dloads/` cache (reused when its
+SHA-256 matches the hash embedded in the script; re-downloaded when missing or
+tampered), extracts it as `vhdl_burnin_rubber_rev_0_0_2017_12_22/`, then runs
+`contrib/tools/prep_roms.sh` to compile `make_vhdl_prom`, convert
+`make_burnin_rubber_proms.bat`, stage the romset from `$ROMZIP` (default
+`~/roms/brubber.zip`) and generate the PROM VHDL. Run it via `make setup`.
 
 ## ROM set required
 
