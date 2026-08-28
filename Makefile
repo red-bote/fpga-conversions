@@ -16,6 +16,8 @@ GALAGA      := Galaga-Midway-by-Dar
 POOYAN      := Pooyan-by-Dar
 TIME_PILOT  := Time-Pilot-by-Dar
 BAGMAN      := Bagman-FPGA-Dar
+BERZERK     := Berzerk-FPGA-by-Dar
+TRON        := Tron-by-Dar
 
 # Bare `make` prints help instead of running a build.
 .DEFAULT_GOAL := help
@@ -125,7 +127,61 @@ clean-bagman:
         patch-time-pilot synth-time-pilot bitstream-time-pilot \
         all-time-pilot clean-time-pilot \
         setup-bagman create-prj-bagman clk-wiz-bagman patch-bagman \
-        synth-bagman bitstream-bagman all-bagman clean-bagman
+        synth-bagman bitstream-bagman all-bagman clean-bagman \
+        setup-berzerk create-prj-berzerk clk-wiz-berzerk patch-berzerk \
+        synth-berzerk bitstream-berzerk all-berzerk clean-berzerk \
+        setup-tron create-prj-tron clk-wiz-tron patch-tron \
+        synth-tron bitstream-tron all-tron clean-tron
+
+# ---- Berzerk ----
+setup-berzerk:
+	$(MAKE) -C "$(BERZERK)" setup
+
+create-prj-berzerk:
+	$(MAKE) -C "$(BERZERK)" create_prj
+
+clk-wiz-berzerk:
+	$(MAKE) -C "$(BERZERK)" clk_wiz
+
+patch-berzerk:
+	$(MAKE) -C "$(BERZERK)" patch
+
+synth-berzerk:
+	$(MAKE) -C "$(BERZERK)" synth
+
+bitstream-berzerk:
+	$(MAKE) -C "$(BERZERK)" bitstream
+
+all-berzerk:
+	$(MAKE) -C "$(BERZERK)" all
+
+clean-berzerk:
+	$(MAKE) -C "$(BERZERK)" clean
+
+# ---- Tron ----
+setup-tron:
+	$(MAKE) -C "$(TRON)" setup
+
+create-prj-tron:
+	$(MAKE) -C "$(TRON)" create_prj
+
+clk-wiz-tron:
+	$(MAKE) -C "$(TRON)" clk_wiz
+
+patch-tron:
+	$(MAKE) -C "$(TRON)" patch
+
+synth-tron:
+	$(MAKE) -C "$(TRON)" synth
+
+bitstream-tron:
+	$(MAKE) -C "$(TRON)" bitstream
+
+all-tron:
+	$(MAKE) -C "$(TRON)" all
+
+clean-tron:
+	$(MAKE) -C "$(TRON)" clean
 
 help:
 	@echo "Top-level port driver. Each step delegates to the machine's own Makefile."
@@ -136,6 +192,8 @@ help:
 	@echo "  Pooyan      : setup          clk-wiz patch synth bitstream all clean"
 	@echo "  Time-Pilot  : setup create-prj clk-wiz patch synth bitstream all clean"
 	@echo "  Bagman      : setup create-prj clk-wiz patch synth bitstream all clean"
+	@echo "  Berzerk     : setup create-prj clk-wiz patch synth bitstream all clean"
+	@echo "  Tron        : setup create-prj clk-wiz patch synth bitstream all clean"
 	@echo
 	@echo "Examples:"
 	@echo "  make setup-galaga      make synth-time-pilot      make bitstream-pooyan"

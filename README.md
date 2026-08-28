@@ -18,15 +18,23 @@ complete, hardware-verified ports (Makefile + `contrib/` scripts +
 `PORTING_SPEC.md`). `Bagman-FPGA-Dar/` carries the full tooling chain as well
 (XDC, clk-wiz generator, top-level patch and bitstream scripts) and builds
 cleanly through `write_bitstream` with timing met; it has been verified
-working on hardware.
+working on hardware. `Tron-by-Dar/` carries the same full tooling chain and its
+Vivado project (`.xpr`, `clk_wiz_0` IP, top-level wrapper) has been verified to
+reproduce cleanly from the tracked assets, but `make synth`/`make bitstream`
+and hardware bring-up are pending a real romset — see
+`Tron-by-Dar/PORTING_SPEC.md` §10. `Berzerk-FPGA-by-Dar/` also carries the full
+tooling chain (mirrored from Bagman: no external scandoubler, internal
+`line_doubler.vhd`) and builds cleanly through `write_bitstream` with timing
+met; hardware bring-up is not yet done — see
+`Berzerk-FPGA-by-Dar/PORTING_SPEC.md` §11.
 
 Every machine directory now carries a scripted setup: `contrib/tools/setup_<game>.sh`
 (fetches the Dar archive into a gitignored `dloads/` cache with an embedded
 SHA-256 check, extracts it, applies any synthesis-fix patches) chaining into
 `contrib/tools/prep_roms.sh` (compiles `make_vhdl_prom`, converts the
 `make_<game>_proms.bat`, stages the romset(s), generates the PROM VHDL), plus a
-`Makefile` wrapping both. The six machines without a full Basys 3 bring-up yet
-(Berzerk, Burnin' Rubber, Kick, Popeye, Sky Skipper, Solar Fox)
+`Makefile` wrapping both. The five machines without a full Basys 3 bring-up yet
+(Burnin' Rubber, Kick, Popeye, Sky Skipper, Solar Fox)
 additionally ship a placeholder `contrib/basys3/vivado/create_project.sh`; their
 XDC, top-level wrapper and clk-wiz scripts still need to be created.
 
@@ -44,6 +52,7 @@ XDC, top-level wrapper and clk-wiz scripts still need to be created.
 | Sky Skipper (Nintendo 1981) | 40 MHz | `basys3/sky_skipper_basys3.xpr`, `sky_skipper_basys3` | — | `skyskipr.zip` |
 | Solar Fox (Bally Midway 1981) | 40 MHz | `basys3/solar_fox_basys3.xpr`, `solar_fox_basys3` | — | `solarfox.zip` |
 | Time Pilot (Konami 1982) | 12.288 + 14.318 MHz | `basys3/time_pilot_basys3.xpr`, `time_pilot_basys3` | — | `timeplt.zip` |
+| Tron (Midway MCR 1982) | 40 MHz | `basys3/tron_basys3.xpr`, `tron_basys3` | — | `tron.zip` + `kick.zip` (color PROM) |
 
 Directory naming is not uniform: `Bagman-FPGA-Dar` and `Berzerk-FPGA-by-Dar`
 differ from the `-by-Dar` convention.

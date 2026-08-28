@@ -12,24 +12,25 @@ archive for the original Dar release notes.
 
 ## Features supported
 
-- **Video**: 31 kHz progressive VGA. Scan doubling is built into the core
-  (`tv15Khz_mode = '0'` fixed — no 15 kHz TV mode on this port).
+- **Video**: switch-selectable via `sw(13)` — 0 = 31 kHz progressive VGA (scan doubling built
+  into the core via `rtl_dar/line_doubler.vhd`), 1 = 15 kHz TV (native rate, composite sync on
+  HS, VS held high; requires a 15 kHz RGB monitor or RGB-to-composite converter).
 - **Sound**: mono PWM audio on PmodAMP2.
-- **Controls**: PS/2 keyboard + JA joystick (OR-merged, verified working),
-  btnC = reset.
+- **Controls**: PS/2 keyboard + JA joystick (movement + fire, OR-merged), dedicated buttons for
+  coin/start, btnC = reset.
 
-| Input | Keyboard |
-|-------|----------|
-| Move | Arrow keys |
-| Fire | Space |
-| Coin | F3 |
-| Start 1 | F1 |
-| Start 2 | F2 |
+| Input | Keyboard | Button |
+|-------|----------|--------|
+| Move | Arrow keys | — |
+| Fire | Space | — |
+| Coin | F3 | btnU or btnD |
+| Start 1 | F1 | btnL |
+| Start 2 | F2 | btnR |
 
 JA joystick (active-low, switch to GND):
 - JA1 = Right, JA2 = Left, JA3 = Down, JA4 = Up, JA7 = Fire
-- Coin = Fire + Up together; Start 1 = Fire + Left together
-- Player 2 mirrors player 1 inputs.
+- Movement + fire only — coin/start are not reachable from the joystick on this port.
+- Player 2 mirrors player 1 movement/fire inputs.
 
 ## IO mapping
 
@@ -37,14 +38,20 @@ JA joystick (active-low, switch to GND):
 |------------------|--------------|----------|
 | clk (W5, 100 MHz) | `clk` | clock into `clk_wiz_0` MMCM |
 | btnC | `btnC` | reset (active-high) |
-| btnU/btnL/btnR/btnD | `btnU/L/R/D` | declared, unused (reserved) |
+| btnL | `btnL` | P1 start (active-high) |
+| btnR | `btnR` | P2 start (active-high) |
+| btnU | `btnU` | coin-in (active-high) |
+| btnD | `btnD` | coin-in (active-high) |
+| sw(13) | `sw(13)` | display mode: 0 = 31 kHz VGA, 1 = 15 kHz TV |
 | sw(15) | `O_PMODAMP2_GAIN` | AMP gain: 0 = 12 dB, 1 = 6 dB |
 | sw(14) | `O_PMODAMP2_SHUTD` | AMP shutdown: 0 = off, 1 = on |
 | JB1 / JB3 | `ps2_dat` / `ps2_clk` | PS/2 keyboard |
-| JA1-JA4, JA7 | `JA(0..4)` | joystick (active-low) |
+| JA1-JA4, JA7 | `JA(0..4)` | joystick (active-low, movement + fire) |
 | JC (PmodAMP2) | `O_PMODAMP2_AIN` | PWM audio (JC1=AIN, JC2=GAIN, JC4=SHUTD) |
-| VGA | `vgaRed/vgaGreen/vgaBlue(3:0)`, `vgaHsync`, `vgaVsync` | 4-4-4 RGB, 31 kHz |
-| LEDs | `led(15:0)` | present |
+| VGA | `vga_r/vga_g/vga_b(3:0)`, `vga_hs`, `vga_vs` | 4-4-4 RGB, 31 kHz / 15 kHz |
+
+No `led` ports — unconstrained on this port (matches Bagman/Pooyan/Time-Pilot's minimal,
+placement-proven port list).
 
 ## Scripted setup
 

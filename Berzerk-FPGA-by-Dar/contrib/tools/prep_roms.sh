@@ -57,7 +57,9 @@ step "3/4 Unzipping romset and renaming to Dar's expected names"
 unzip -o "$ROMZIP" -d "$PROM_DIR"
 rename_rom() {
     local src="$1" dst="$2"
-    [ -e "$PROM_DIR/$src" ] && [ ! -e "$PROM_DIR/$dst" ] && mv "$PROM_DIR/$src" "$PROM_DIR/$dst"
+    if [ -e "$PROM_DIR/$src" ] && [ ! -e "$PROM_DIR/$dst" ]; then
+        mv "$PROM_DIR/$src" "$PROM_DIR/$dst"
+    fi
 }
 rename_rom 1c-0 berzerk_rc31_1c.rom0.1c
 rename_rom 1d-1 berzerk_rc31_1d.rom1.1d
