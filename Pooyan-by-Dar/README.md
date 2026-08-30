@@ -93,7 +93,7 @@ These generated files must exist before the project can be synthesized.
 The root `Makefile` wraps the scripted setup: `make setup` (download+extract upstream, apply
 patch, build the PROM generator, unzip the romset, generate PROM VHDL, copy ported assets),
 `make clk_wiz` (generate the `clk_wiz_0` IP, depends on setup), `make patch` (regenerate the
-DE10→Basys3 top level and its patch, depends on setup), `make all` (setup + clk_wiz),
+DE10→Basys3 top level and its patch, depends on setup), `make all` (setup + clk_wiz + patch),
 `make synth` (run synthesis, depends on setup/clk_wiz/patch), `make bitstream`
 (implementation + write_bitstream, depends on synth), and `make clean` (remove the generated
 `vhdl_pooyan_rev_0_2_2020_04_26/` tree).

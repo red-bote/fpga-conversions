@@ -49,8 +49,8 @@ Decision (confirmed with user, revises an earlier decision in this same spec): `
 respectively — see §7. This reverses the original minimal-port decision below, which is kept for
 context: the pristine top declares `ledr(9:0)` (only bit 0 driven, by `berzerk.vhd`'s `led_on`
 signal) and leaves `btnU/L/R/D`-equivalent DE10 `key(1)` unused, and declaring unconstrained
-ports on the Basys3 top risks a Vivado placement failure (`Place 30-58`), as documented for the
-`wip/Arcade_Galaga` port — moot once the ports are constrained in the XDC, as they now are. No
+ports on the Basys3 top risks a Vivado placement failure (`Place 30-58`) — moot once the ports
+are constrained in the XDC, as they now are. No
 `led` ports (still unconstrained, matches Bagman/Pooyan/Time-Pilot).
 
 The pristine top's `sw(9 downto 0)` → core `sw` input and `dbg_cpu_addr`/`dbg_cpu_di` → 7-segment
@@ -135,8 +135,8 @@ runtime, matching Bagman's convention.
   `clock_10` (pristine top's clocking — single clock domain, no separate PS/2 clock divider).
   `kbd_joystick.vhd`'s exact port names/widths must be confirmed against
   `rtl_dar/kbd_joystick.vhd` at authoring time — do not assume they match Bagman's interface;
-  Dar's per-project `kbd_joystick` variants differ (as documented for the
-  `wip/Arcade_Galaga` port, whose Somhi fork diverged from Dar's own interface).
+  Dar's per-project `kbd_joystick` variants differ (e.g., the Somhi/DECAfpga Galaga fork
+  diverged from Dar's own interface).
 - Pristine top's `joyHBCPPFRLDU(9 downto 0)` index mapping to reproduce
   (`berzerk_de10_lite.vhd:183-198`): `(0)=up, (1)=down, (2)=left, (3)=right, (4)=fire,
   (5)=start1, (6)=start2, (7)=coin1`. Player 2 mirrors player 1 (same indices wired to both
@@ -177,44 +177,16 @@ Fully scripted, mirroring Bagman:
 
 - `make setup` (`contrib/tools/setup_berzerk.sh` — download/extract, apply
   `berzerk_reset_sensitivity.patch`, rom-prep). **Done.**
-- `make create_prj` (`contrib/basys3/vivado/create_project.sh` — already present and correct;
-  copies `berzerk_basys3.xpr` + `Basys-3-Master.xdc` into the non-nested `basys3/` tree). Needs
-  the `.xpr`/`.xdc` pair authored under `contrib/basys3/vivado/` (§1-§7 above; not yet present).
+- `make create_prj` (`contrib/basys3/vivado/create_project.sh` — present;
+  copies `berzerk_basys3.xpr` + `Basys-3-Master.xdc` into the non-nested `basys3/` tree). The
+  `.xpr`/`.xdc` pair lives under `contrib/basys3/vivado/` (§1-§7 above).
 - `make clk_wiz` (`contrib/basys3/tools/make_clk_wiz_0.sh`, Vivado-batch MMCM IP generation,
-  10 MHz target). **Not yet present.**
+  10 MHz target).
 - `make patch` (`contrib/basys3/tools/make_de10_lite_to_basys3_patch.sh` — authors
-  `berzerk_basys3.vhd` and its record patch, §8). **Not yet present.**
+  `berzerk_basys3.vhd` and its record patch, §8).
 - `make synth` / `make bitstream`
-  (`contrib/basys3/tools/make_berzerk_basys3_bitstream.sh`). **Not yet present.**
+  (`contrib/basys3/tools/make_berzerk_basys3_bitstream.sh`).
 - Run synthesis/implementation from `/tmp` so `vivado.log`/`vivado.jou` stay outside the repo.
   Tool resolution: `VIVADO` → `/tools/Xilinx/Vivado/2020.2/bin/vivado`; roms: `ROMZIP` →
   `~/roms/berzerk.zip`.
 
-## 11. Status
-
-Coin/start revised (2026-08-28, confirmed with user) from JA fire+direction combos to dedicated
-buttons (`btnL`=P1 start, `btnR`=P2 start, `btnU`/`btnD`=coin-in), per §1/§7. Rebuilt end-to-end
-after the change: 0 errors, timing still met (WNS +44.5 ns, WHS +0.086 ns).
-
-Scripted build chain complete: `create_prj → clk_wiz → patch → synth → bitstream` runs
-end-to-end and produces `berzerk_basys3.bit` with 0 synthesis/implementation errors and all
-timing constraints met (WNS +44.7 ns, WHS +0.075 ns on the 10 MHz core clock domain, prior to the
-coin/start revision above). 90
-advisory DRC warnings (gated-clock and RAMB-async-control checks in `berzerk_sound_fx.vhd`,
-`berzerk_speech.vhd`, `cram`) are inherited from Dar's pristine core design, not introduced by
-the Basys3 wrapper — not investigated further in this pass.
-
-Two pre-existing bugs in the already-present `contrib/tools/` scripts were found and fixed
-while exercising the ladder (unrelated to this spec's design decisions, required for a clean
-re-run of `make bitstream`):
-- `prep_roms.sh`'s `rename_rom` used a bare `&&` chain as its only statement, so a no-op call
-  (destination already renamed by a prior run) returned non-zero and aborted the script under
-  `set -e`. Fixed to an `if` block.
-- `setup_berzerk.sh`'s fix-patch loop was missing the `*_de10_lite_to_basys3.patch` exclusion
-  that `setup_bagman.sh`/`setup_time_pilot.sh` already carry, so `make setup` reapplied the
-  record/rewrite patch to the pristine DE10-lite top on every run, corrupting it into the
-  wrapper's own content and producing an empty, unreapplicable patch on the next `make patch`.
-  Fixed by excluding that filename from the glob, matching Bagman/Time-Pilot.
-
-No hardware bring-up performed yet (video/audio/IO wiring verified by synthesis + inspection
-against the pristine DE10-lite top only, per §1-§7).

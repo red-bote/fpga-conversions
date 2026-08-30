@@ -9,8 +9,19 @@ FPGA ports of Dar's arcade hardware (`darfpga@aol.fr`) to the Digilent Basys 3
 (Artix-7 `xc7a35tcpg236-1`), built with Vivado 2020.2. Each machine is an
 independent project under its own `<Machine>-by-Dar/` directory.
 
-`Pooyan-by-Dar/` is the reference, fully-scripted port. Use it as the template
-for new work.
+Most `<Machine>-by-Dar/` directories are **not** ports — they contain only the
+extracted Dar source archive (`vhdl_<machine>_rev_.../`). A directory is an
+actual Basys 3 port iff it has `contrib/`, a `Makefile`, and a `README.md`
+(currently ~11 of ~30). Don't assume a machine dir is buildable.
+
+New ports start from the generic templates in `wip/machine/`: the project
+`wip/machine/contrib/basys3/basys3-project-template/` (project + `basys3-top.vhd`),
+its in-project constraints `basys3-project-template.srcs/constrs_1/imports/
+digilent-xdc-master/Basys-3-Master.xdc`, the per-machine Makefile
+`wip/machine/Makefile.template`, and the tokenized build-script templates
+under `wip/machine/contrib/` (`tools/`, `basys3/tools/`, `basys3/vivado/`).
+The ported `.xpr` and `.xdc` derive from the sample project
+(`basys3-project-template.xpr` + its in-project `Basys-3-Master.xdc`).
 
 ## Repo layout
 
@@ -24,6 +35,8 @@ for new work.
   design and build.
 - `tools/vhdl_formatter.py` — stdlib-only VHDL indent/alignment formatter
   (`--check`, `--align`, `--indent N`).
+- `downloads.md` — index of archived Dar source zips (SourceForge URL + SHA
+  pattern); consult when a `setup_<machine>.sh` needs an archive URL/hash.
 
 ## Build workflow (per machine)
 
@@ -68,16 +81,14 @@ Idempotent. `--check` for CI, `--align` for column alignment.
   differ from the `-by-Dar` convention.
 - Machines needing two romsets (Galaga, Popeye) require the extra set for
   CPU/speech ROMs absent from the plain set.
-- Galaga's `rtl_dar/galaga.vhd` has been modified to expose `dip_switch_a`/`dip_switch_b`
-  as entity input ports (replacing hard-coded constants). This is captured as
-  `contrib/code/galaga_dipswitch.patch` and applied during `make setup` (see
-  PORTING_SPEC §7.3, §8). The upstream Basys3 port drives these from
-  `sw(12 downto 0)` with inverted polarity.
 - Galaga and Burnin' Rubber import `mist/scandoubler.v` (15 kHz core output);
   Time Pilot and Pooyan import `vga_scandoubler.v` (DECA).
-- The five machines without a full Basys 3 bring-up (Burnin' Rubber, Kick,
-  Popeye, Sky Skipper, Solar Fox) have placeholder
-  `contrib/basys3/vivado/create_project.sh` — their XDC, top-level wrapper, and
-  clk-wiz scripts still need to be created.
+- Five machines still need a full Basys 3 hardware bring-up: Kick, Popeye,
+  Sky Skipper, Solar Fox, and Tron. Each has a real, machine-specific
+  `contrib/basys3/vivado/create_project.sh`. Tron additionally has its
+  `.xdc`/`.xpr` and a scripted, tooling-verified project (opens cleanly, clean
+  `check_syntax`/`xvhdl` pass); synthesis/bitstream/hardware bring-up remain
+  outstanding. The other four (Kick, Popeye, Sky Skipper, Solar Fox) still need
+  their `.xdc`/`.xpr` and top-level wrapper created before synthesis can begin.
 - The shipped `make_<game>_proms.bat` files have CRLF endings; `prep_roms.sh`
   converts them to LF via sed before execution.

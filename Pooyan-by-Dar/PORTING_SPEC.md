@@ -95,7 +95,7 @@ Verify with:
 patch -p1 --dry-run < contrib/basys3/code/pooyan_de10_lite_to_basys3.patch
 ```
 
-## 9. Open items / hardware verification
+## 9. Open items
 
 - Whether the `blankn` gating before the doubler is redundant (if the core already emits black
   pixels during blank) — to be confirmed on hardware.

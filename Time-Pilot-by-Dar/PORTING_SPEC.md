@@ -4,8 +4,7 @@ This spec documents the completed porting process of Dar's Time Pilot hardware t
 Digilent Basys 3, mirroring the reference Pooyan port (`PORTING_SPEC.md`).
 
 Time-Pilot is fully scripted (`contrib/tools/`, `contrib/basys3/vivado/`, `Makefile`:
-`setup`/`clk_wiz`/`patch`/`synth`/`bitstream`) and hardware-verified: the built bitstream has
-been confirmed working on a physical Basys 3.
+`setup`/`clk_wiz`/`patch`/`synth`/`bitstream`).
 
 - Top entity: `time_pilot_basys3` (target file `sources_1/new/time_pilot_basys3.vhd`)
 - Part: `xc7a35tcpg236-1`, VHDL target language
@@ -136,11 +135,7 @@ Confirmed against `time_pilot_de10_lite.vhd` and the built `time_pilot_basys3.vh
 - Run synthesis/implementation from `/tmp` so `vivado.log` / `vivado.jou` stay outside the repo.
 - Vivado: `VIVADO` → `/tools/Xilinx/Vivado/2020.2/bin/vivado`; roms: `ROMZIP` → `~/roms/`.
 
-## 10. Status
+## 10. Known limitation
 
-Complete and hardware-verified: video, audio, PS/2 keyboard, JA joystick, dip switches
-(`sw(7:0)`), and reset (`btnC`) all confirmed working on a physical Basys 3.
-
-Remaining known limitation (shared with Pooyan, not specific to this port): 15 kHz bypass mode
-is wired into the scandoubler (`enable_scandoubling`) but hardcoded to `'1'` (VGA output only) —
-no switch is wired to toggle it at runtime.
+TODO: The 15 kHz bypass mode is wired into the scandoubler (`enable_scandoubling`) but hardcoded to
+`'1'` (VGA output only) — no switch is wired to toggle it at runtime.

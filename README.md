@@ -11,32 +11,15 @@ source of truth for that machine's design and build.
 
 ## Status
 
-`Pooyan-by-Dar/` is the reference, fully-scripted port: it ships a `Makefile`
-and `contrib/basys3/` build scripts. Use it as the template when bringing up the
-other machines. `Time-Pilot-by-Dar/` and `Galaga-Midway-by-Dar/` are also
-complete, hardware-verified ports (Makefile + `contrib/` scripts +
-`PORTING_SPEC.md`). `Bagman-FPGA-Dar/` carries the full tooling chain as well
-(XDC, clk-wiz generator, top-level patch and bitstream scripts) and builds
-cleanly through `write_bitstream` with timing met; it has been verified
-working on hardware. `Tron-by-Dar/` carries the same full tooling chain and its
-Vivado project (`.xpr`, `clk_wiz_0` IP, top-level wrapper) has been verified to
-reproduce cleanly from the tracked assets, but `make synth`/`make bitstream`
-and hardware bring-up are pending a real romset — see
-`Tron-by-Dar/PORTING_SPEC.md` §10. `Berzerk-FPGA-by-Dar/` also carries the full
-tooling chain (mirrored from Bagman: no external scandoubler, internal
-`line_doubler.vhd`) and builds cleanly through `write_bitstream` with timing
-met; hardware bring-up is not yet done — see
-`Berzerk-FPGA-by-Dar/PORTING_SPEC.md` §11.
+Time-Pilot-by-Dar, Pooyan-by-Dar, Bagman-FPGA-Dar, Berzerk-FPGA-by-Dar, Burnin-Rubber-by-Dar and Galaga-Midway-by-Dar are complete,
+fully-scripted, hardware-verified ports.
 
 Every machine directory now carries a scripted setup: `contrib/tools/setup_<game>.sh`
 (fetches the Dar archive into a gitignored `dloads/` cache with an embedded
 SHA-256 check, extracts it, applies any synthesis-fix patches) chaining into
 `contrib/tools/prep_roms.sh` (compiles `make_vhdl_prom`, converts the
 `make_<game>_proms.bat`, stages the romset(s), generates the PROM VHDL), plus a
-`Makefile` wrapping both. The five machines without a full Basys 3 bring-up yet
-(Burnin' Rubber, Kick, Popeye, Sky Skipper, Solar Fox)
-additionally ship a placeholder `contrib/basys3/vivado/create_project.sh`; their
-XDC, top-level wrapper and clk-wiz scripts still need to be created.
+`Makefile` wrapping both. 
 
 ## Machine index
 
@@ -45,7 +28,7 @@ XDC, top-level wrapper and clk-wiz scripts still need to be created.
 | Berzerk (Stern 1980) | 10 MHz | `basys3/berzerk_basys3.xpr`, `berzerk_basys3` | `berzerk_reset_sensitivity.patch` | `berzerk.zip` |
 | Bagman (Stern 1982) | 12 MHz | `basys3/bagman_basys3.xpr`, `bagman_basys3` | `bagman_xor_width.patch` | `bagman.zip` |
 | Burnin' Rubber (Data East 1982) | 12 + 6 MHz | `basys3/burnin_rubber_basys3.xpr`, `burnin_rubber_basys3` | — | `brubber.zip` |
-| Galaga (Namco/Midway 1981) | 36 MHz | `basys3/galaga_basys3.xpr`, `galaga_basys3` | `galaga_credit_mode_fix.patch` | `galaga.zip` + `galagamw.zip` |
+| Galaga (Namco/Midway 1981) | 36 MHz | `basys3/galaga_basys3.xpr`, `galaga_basys3` | `galaga_bgpalette_xor_length_fix.patch`, `galaga_credit_mode_fix.patch`, `galaga_vga_sync.patch` | `galaga.zip` + `galagamw.zip` |
 | Kick (Midway MCR 1981) | 40 MHz | `basys3/kick_basys3.xpr`, `kick_basys3` | — | `kick.zip` |
 | Popeye (Nintendo 1982) | 40.32 MHz | `basys3/popeye_basys3.xpr`, `popeye_basys3` | `popeye_linmix_sensitivity.patch` | `popeye.zip` + `popeyeu.zip` |
 | Pooyan (Konami 1982) | 12 + 14 MHz | `basys3/pooyan_basys3/pooyan_basys3.xpr`, `pooyan_basys3` | `pooyan_de10_lite_to_basys3.patch`, `pooyan_t80_xor_width.patch` | `pooyan.zip` |
@@ -55,13 +38,17 @@ XDC, top-level wrapper and clk-wiz scripts still need to be created.
 | Tron (Midway MCR 1982) | 40 MHz | `basys3/tron_basys3.xpr`, `tron_basys3` | — | `tron.zip` + `kick.zip` (color PROM) |
 
 Directory naming is not uniform: `Bagman-FPGA-Dar` and `Berzerk-FPGA-by-Dar`
-differ from the `-by-Dar` convention.
+differ from the `-by-Dar` convention; `Sky-skipper-by-Dar` uses a lowercase `s`.
 
 The `—` patch entries mark machines that need no synthesis-fix patch. Machines
 needing two romsets (`galaga`, `popeye`) require the extra set for CPU/speech
 ROMs absent from the plain set.
 
 ## Common build workflow
+
+New ports are bootstrapped from the generic templates in `wip/machine/`
+(Makefile, build-script templates, and the sample Basys 3 Vivado project);
+see the root `PORTING_SPEC.md` for the full bring-up procedure.
 
 Per machine, from its own directory (see the machine's `README.md` for the exact
 file names, MMCM constants, and verify commands):
@@ -113,6 +100,6 @@ It is dependency-free (stdlib only), in-place or `--check`, and idempotent.
 
 ## Copyright
 
-Roms and the generated PROM VHDL are copyrighted MAME-derived content and are
+Roms and the generated PROM VHDL are copyrighted content and are
 never committed or distributed. The `.patch` files are the tracked record of
 changes to pristine Dar sources.

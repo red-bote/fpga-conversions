@@ -6,15 +6,14 @@ Time-Pilot per-machine specs.
 
 Galaga **is scripted**: `Makefile` + `contrib/{tools,basys3/{tools,vivado}}` are present and
 `make setup`, `make create_prj`, and `make clk_wiz` run end-to-end against the pristine Dar
-source tree (`vhdl_galaga_rev_0_3_2018_05_06/`, fetched locally, not checked in). What remains
-is the top-level wrapper itself: `galaga_basys3.vhd` and the
-`make_de10_lite_to_basys3_patch.sh` script that would generate/record it are not yet authored —
-this is a redo, authored fresh from the sources of truth below (this doc — including the scan
-doubler wiring in §12 — the machine `README.md`, and the pristine source tree), not recovered
-from git history.
+source tree (`vhdl_galaga_rev_0_3_2018_05_06/`, fetched locally, not checked in). The
+top-level wrapper `galaga_basys3.vhd` and its generator
+`make_de10_lite_to_basys3_patch.sh` are authored from the sources of truth below (this doc —
+including the scan doubler wiring in §12 — the machine `README.md`, and the pristine source
+tree).
 
 - Source archive: `vhdl_galaga_rev_0_3_2018_05_06.zip` (SourceForge folder `galaga`, per
-  `~/tmp/downloads.md`) → `vhdl_galaga_rev_0_3_2018_05_06/` at the machine root.
+  the repo-root `downloads.md`) → `vhdl_galaga_rev_0_3_2018_05_06/` at the machine root.
 - Top entity: `galaga_basys3` (target file `sources_1/new/galaga_basys3.vhd`)
 - Part: `xc7a35tcpg236-1`, VHDL target language
 
@@ -127,8 +126,8 @@ tree except the two excluded by name (see below), each idempotently (`patch -p1 
   flag (`cs51XX_credit_mode <= '1'`) on every hardware coin edge, at `rtl_dar/galaga.vhd:848`.
   Applied automatically by `setup_galaga.sh`; verify with
   `grep -n "cs51XX_credit_mode <= '1'" vhdl_galaga_rev_0_3_2018_05_06/rtl_dar/galaga.vhd`. See
-  `wip_keep.md` for the still-open investigation into the underlying 51XX state machine this
-  patch works around.
+  `contrib/code/51xx_credit_state_machine_investigation.md` for the still-open investigation
+  into the underlying 51XX state machine this patch works around.
 - **`galaga_vga_sync.patch`** — synthesis-fix/enabling patch, `rtl_dar/galaga.vhd`: the pristine
   core leaves `video_hs`/`video_vs` commented out of the entity port list, with the video
   generator's `hsync`/`vsync` wired to `open`. Uncomments the two ports and wires them to
@@ -167,12 +166,12 @@ to `contrib/basys3/code/` (the conventional location), matching Pooyan/Time-Pilo
 
 ## 10. Build / project setup
 
-- Scripted and confirmed working: `make setup` (extract + patch + rom-prep),
+- Scripted: `make setup` (extract + patch + rom-prep),
   `make create_prj` (project dirs, `.xpr` copy with scandoubler re-point, XDC copy, scandoubler.v
-  copy + `scandoubler_fix.patch`), and `make clk_wiz` (Vivado-batch MMCM IP generation) all ran
-  end-to-end against a freshly fetched pristine tree. `make patch` (top-level wrapper generation)
-  and downstream `synth`/`bitstream` cannot run yet — `make_de10_lite_to_basys3_patch.sh` and its
-  output `galaga_basys3.vhd` remain to be authored (this redo).
+  copy + `scandoubler_fix.patch`), `make clk_wiz` (Vivado-batch MMCM IP generation), `make patch`
+  (top-level wrapper generation via `make_de10_lite_to_basys3_patch.sh`, authoring
+  `galaga_basys3.vhd`), `make synth` and `make bitstream`
+  (`make_galaga_basys3_bitstream.sh`).
 - **Non-nested project layout**: the `.xpr` lives directly in `basys3/` as
   `basys3/galaga_basys3.xpr`, with the sources tree at `basys3/galaga_basys3.srcs/`.
 - Run synthesis/implementation from `/tmp` so `vivado.log` / `vivado.jou` stay outside the repo.
@@ -182,14 +181,10 @@ to `contrib/basys3/code/` (the conventional location), matching Pooyan/Time-Pilo
 
 ## 11. Open items
 
-- `make_de10_lite_to_basys3_patch.sh` and `galaga_basys3.vhd` not yet authored — the redo this
-  spec is now current for.
 - Patches live at `contrib/code/` (flat) vs. the `contrib/basys3/code/` convention (§8).
 - `ROMZIP1`/`ROMZIP2` vs. the generic single-`ROMZIP` convention (§9) — intentional two-romset
   deviation, not flagged for migration here.
-- `wip_keep.md`: Namco 51XX coin/credit state machine investigation, on hold.
-- Hardware verification (start/coin behavior, keyboard stick, 15 kHz mode) once the wrapper is
-  built.
+- `contrib/code/51xx_credit_state_machine_investigation.md`: Namco 51XX coin/credit state machine investigation, on hold.
 
 ## 12. Scan doubler wiring (31 kHz VGA)
 
@@ -258,7 +253,8 @@ instance (its `video_hs` / `video_vs` ports), with no intermediate logic.
 These are the core's native, undoubled sync signals, generated internally by
 the core at a 15.625 kHz horizontal line rate and a 384-count-per-line,
 264-line-per-frame counter geometry. The core's `video_csync` output is not
-connected to the scan doubler (or to anything else in the top level).
+connected to the scan doubler; it drives `vga_hs` directly in the `sw(13)`
+TV-mode output path instead (see §12.6).
 
 #### 12.3.2 `r_in` / `g_in` / `b_in`
 

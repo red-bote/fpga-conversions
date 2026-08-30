@@ -92,8 +92,8 @@ From the `Time-Pilot-by-Dar/` directory, `make` wraps the scripted setup:
 reference to the local import), `Basys-3-Master.xdc`, and `vga_scandoubler.v`. Run it once after
 `make setup`, before `make synth`/`make bitstream`.
 
-The port is complete and hardware-verified: video, audio, PS/2 keyboard, JA joystick, dip
-switches, and reset all confirmed working on a physical Basys 3. See `PORTING_SPEC.md`.
+The port is complete and hardware-verified: video, audio, PS/2 keyboard, JA joystick, and
+reset all confirmed working on a physical Basys 3. See `PORTING_SPEC.md`.
 
 ## TODO
 

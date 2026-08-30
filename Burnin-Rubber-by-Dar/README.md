@@ -16,12 +16,15 @@ notes.
 ## Features supported
 
 - **Video**: 31 kHz progressive VGA via an imported MiST scandoubler
-  (`imports/mist/scandoubler.v`). No 15 kHz TV mode on this port.
-- **Scan doubler source**: the imported scandoubler is from
-  https://github.com/DECAfpga/Arcade_Galaga/blob/main/mist/scandoubler.v
-- **Scan doubler wiring**: see `PORTING_SPEC.md`.
+  (`imports/mist/scandoubler.v`). sw(13) switches to 15 kHz TV mode (native RGB
+  + composite sync on HS).
+- **Scan doubler source**: downloaded the first build from
+  https://raw.githubusercontent.com/DECAfpga/Arcade_Galaga/main/mist/scandoubler.v and
+  stashed in `dloads/`; the stashed copy is reused for subsequent builds.
+- **Scan doubler wiring**: see `contrib/basys3/PORTING_SPEC.md`.
 - **Sound**: mono PWM audio on PmodAMP2.
-- **Controls**: PS/2 keyboard + JA joystick (OR-merged), btnC = reset.
+- **Controls**: PS/2 keyboard + JA joystick (OR-merged); buttons btnU/btnD =
+  coin-in, btnL/btnR = start 1/2, btnC = reset.
 
 | Input | Keyboard |
 |-------|----------|
@@ -36,20 +39,25 @@ JA joystick (active-low, switch to GND):
 - Coin = Fire + Up together; Start 1 = Fire + Left together
 - Player 2 mirrors player 1 inputs.
 
+Buttons (active-low, switch to GND):
+- btnU = coin-in, btnD = coin-in
+- btnL = start 1, btnR = start 2, btnC = reset
+
 ## IO mapping
 
 | Basys 3 resource | Wrapper port | Function |
 |------------------|--------------|----------|
 | clk (W5, 100 MHz) | `clk` | clock into `clk_wiz_0` MMCM |
+| btnU / btnD | `btnU` / `btnD` | coin-in |
+| btnL / btnR | `btnL` / `btnR` | start 1 / start 2 |
 | btnC | `btnC` | reset (active-high) |
-| btnU/btnL/btnR/btnD | `btnU/L/R/D` | declared, unused (reserved) |
 | sw(15) | `O_PMODAMP2_GAIN` | AMP gain: 0 = 12 dB, 1 = 6 dB |
 | sw(14) | `O_PMODAMP2_SHUTD` | AMP shutdown: 0 = off, 1 = on |
+| sw(13) | `sw(13)` | display mode: 0 = VGA, 1 = 15 kHz TV |
 | JB1 / JB3 | `ps2_dat` / `ps2_clk` | PS/2 keyboard |
 | JA1-JA4, JA7 | `JA(0..4)` | joystick (active-low) |
 | JC (PmodAMP2) | `O_PMODAMP2_AIN` | PWM audio (JC1=AIN, JC2=GAIN, JC4=SHUTD) |
-| VGA | `vgaRed/vgaGreen/vgaBlue(3:0)`, `vgaHsync`, `vgaVsync` | 4-4-4 RGB, 31 kHz |
-| LEDs | `led(15:0)` | present |
+| VGA | `vgaRed/vgaGreen/vgaBlue(3:0)`, `vgaHsync`, `vgaVsync` | 4-4-4 RGB, 31 kHz VGA / 15 kHz TV |
 
 ## Known issues
 
@@ -64,7 +72,9 @@ SHA-256 matches the hash embedded in the script; re-downloaded when missing or
 tampered), extracts it as `vhdl_burnin_rubber_rev_0_0_2017_12_22/`, then runs
 `contrib/tools/prep_roms.sh` to compile `make_vhdl_prom`, convert
 `make_burnin_rubber_proms.bat`, stage the romset from `$ROMZIP` (default
-`~/roms/brubber.zip`) and generate the PROM VHDL. Run it via `make setup`.
+`~/roms/brubber.zip`) and generate the PROM VHDL. Run it via `make setup`. The
+MiST `scandoubler.v` (see Features above) is likewise fetched on first build and
+stashed in `dloads/` for reuse.
 
 ## ROM set required
 
@@ -81,3 +91,15 @@ references these generated files in place, so the build needs only the staged
 ROMs + the script.
 
 machine ROMs are copyrighted — never commit or redistribute them.
+
+## Build status
+
+The port is fully scripted and has been verified to reproduce a Vivado project that opens
+cleanly (correct top entity, part, and source list; 21 sources + 1 constraints file) end-to-end
+from the tracked assets alone. `check_syntax` (HDL parse only, no synthesis) passes with no
+errors — only benign warnings in the untouched canonical `scandoubler.v` import and info-level
+notes on the `clk_wiz_0` IP instantiation.
+
+Hardware bring-up is complete: a bitstream has been built and the port runs correctly on the
+Basys 3 board.
+

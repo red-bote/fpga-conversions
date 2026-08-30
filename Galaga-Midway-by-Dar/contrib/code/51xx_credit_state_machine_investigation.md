@@ -1,6 +1,6 @@
 # Namco 51XX coin/credit state machine — investigation
 
-Topic raised in `../wip_keep.md` ("Pending Investigations"): the relationship between the
+Documents the relationship between the
 `cs51XX` coin/credit state machine signals
 (`cs51XX_switch_mode`, `cs51XX_credit_mode`, `credit_bcd`, `cs51XX_coin_mode_cnt`) and the
 one-line coin-edge fix `galaga_credit_mode_fix.patch` (`cs51XX_credit_mode <= '1'`).

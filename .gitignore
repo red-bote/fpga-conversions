@@ -29,16 +29,6 @@
 # Copyrighted MAME-derived content is never committed — extra safety net
 *.zip
 
-# Arcade_Galaga (machine dir = checked-in upstream tree, not a vhdl_* tree):
-# keep unzipped romset content out of version control. ROM bins hard-ignored;
-# the regenerated make_galaga_proms.sh stays tracked (LF conversion of the
-# shipped CRLF copy); generated PROM VHDL visible-untracked per the vhdl_*
-# convention above — never commit or stage it.
-/Arcade_Galaga/tools/galaga_unzip/*
-!/Arcade_Galaga/tools/galaga_unzip/make_galaga_proms.bat
-!/Arcade_Galaga/tools/galaga_unzip/make_galaga_proms.sh
-!/Arcade_Galaga/tools/galaga_unzip/*.vhd
-
 # Vivado build junk (keep .xpr/.xdc/.vhd sources visible)
 **/.runs/
 **/.cache/
