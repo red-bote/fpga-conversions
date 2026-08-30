@@ -36,3 +36,24 @@
     - Vivado: `VIVADO` → `/tools/Xilinx/Vivado/2020.2/bin/vivado`
     - roms: `ROMZIP` → `~/roms/`
    - `contrib/basys3/vga_scandoubler.v` is the canonical cleanroom import — never modify it.
+
+## Documentation scope (PORTING_SPEC.md)
+
+- `PORTING_SPEC.md` is scoped to **design intent** for implementing the port: it
+  is authored before (or alongside) the implementation and informs how to
+  implement it. Keep it to design-intent detail only.
+- It carries no port status and no build/verification report — those have no
+  place in the PORTING_SPEC.
+- Concrete implementation and wiring details live in the machine `README.md`,
+  not the PORTING_SPEC.
+- The root `PORTING_SPEC.md` is the generic bring-up procedure; each
+  `<Machine>-by-Dar/.../PORTING_SPEC.md` is that machine's design-intent spec.
+
+## Documentation scope (machine README.md)
+
+- Each `<Machine>-by-Dar/README.md` is the single source of truth for that
+  machine's design and build, but report **minimal status** in it — at most a
+  brief verified/complete statement.
+- Port status (scripted / synthesized / bitstream built / hardware-verified) is
+  tracked in the root `README.md` Status section; keep the machine README lean
+  and point there rather than repeating a status narrative.

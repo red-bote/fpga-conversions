@@ -3,6 +3,11 @@
 Operational guidance for AI sessions in this repository. See also
 `.opencode/rules.md` for terminology, filesystem scope, and git rules.
 
+Detailed porting/procedure how-tos live in `.opencode/skills/`:
+`port-dar-machine`, `vivado-batch-build`, `xpr-dependency-closure`,
+`romset-forensics`. Consult them before starting a port or running a Vivado
+build.
+
 ## What this repo is
 
 FPGA ports of Dar's arcade hardware (`darfpga@aol.fr`) to the Digilent Basys 3
@@ -83,12 +88,9 @@ Idempotent. `--check` for CI, `--align` for column alignment.
   CPU/speech ROMs absent from the plain set.
 - Galaga and Burnin' Rubber import `mist/scandoubler.v` (15 kHz core output);
   Time Pilot and Pooyan import `vga_scandoubler.v` (DECA).
-- Five machines still need a full Basys 3 hardware bring-up: Kick, Popeye,
-  Sky Skipper, Solar Fox, and Tron. Each has a real, machine-specific
-  `contrib/basys3/vivado/create_project.sh`. Tron additionally has its
-  `.xdc`/`.xpr` and a scripted, tooling-verified project (opens cleanly, clean
-  `check_syntax`/`xvhdl` pass); synthesis/bitstream/hardware bring-up remain
-  outstanding. The other four (Kick, Popeye, Sky Skipper, Solar Fox) still need
-  their `.xdc`/`.xpr` and top-level wrapper created before synthesis can begin.
+- Three machines still need a full Basys 3 hardware bring-up: Kick,
+  Sky Skipper, and Solar Fox. Each has a real, machine-specific
+  `contrib/basys3/vivado/create_project.sh`, but they still need their
+  `.xdc`/`.xpr` and top-level wrapper created before synthesis can begin.
 - The shipped `make_<game>_proms.bat` files have CRLF endings; `prep_roms.sh`
   converts them to LF via sed before execution.

@@ -97,5 +97,5 @@ reset all confirmed working on a physical Basys 3. See `PORTING_SPEC.md`.
 
 ## TODO
 
-- Dip switches 1–8 are wired but unverified on hardware.
-- 15 kHz display is unverified and needs a switch wired to enable/disable TV mode.
+- Dip switches 1–8 confirmed working on hardware.
+- 15 kHz display is not connected; needs a switch wired to enable/disable TV mode.

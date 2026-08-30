@@ -84,6 +84,25 @@ The pristine YM2149 mixer (`vhdl_popeye_rev_0_3_2020_01_27/rtl_mikej/
 ym_2149_linmix.vhd`) has a process whose sensitivity list omits `ioa_inreg`.
 The one-line fix adds it:
 
+`p_rdata` is a combinational process that drives the chip's read-back data bus
+`O_DA`. When Port A is configured as input, it selects that branch of the
+`case addr`:
+
+```vhdl
+when x"E" => if (reg(7)(6) = '0') then -- input
+               O_DA <= ioa_inreg;
+             else
+               O_DA <= reg(14);
+             end if;
+```
+
+so the process reads `ioa_inreg` to produce `O_DA`. Missing from the sensitivity
+list, a change in `ioa_inreg` (e.g. a Port A input level change) does not
+re-evaluate `p_rdata`, leaving the read-back data stale until some other listed
+signal (like `addr` or `reg`) changes. Because `ioa_inreg` is itself
+combinational (`ioa_inreg <= I_IOA;`), this is a real logic-simulation bug, not
+just a Vivado lint warning, and must be fixed for the port to run correctly.
+
 ```vhdl
 p_rdata                : process(busctrl_re, addr, reg, ioa_inreg)
 ```

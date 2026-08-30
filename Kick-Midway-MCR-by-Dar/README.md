@@ -34,7 +34,7 @@ notes.
 
 JA joystick (active-low, switch to GND):
 - JA1 = Spin right, JA2 = Spin left, JA3 = Down, JA4 = Up (kick), JA7 = Fire (speed up)
-- Coin = Fire + Up together; Start 1 = Fire + Left together
+- Coin = Fire + Down together; Start 1 = Fire + Left together; Start 2 = Fire + Right together
 
 ## IO mapping
 
@@ -42,7 +42,6 @@ JA joystick (active-low, switch to GND):
 |------------------|--------------|----------|
 | clk (W5, 100 MHz) | `clk` | clock into `clk_wiz_0` MMCM |
 | btnC | `btnC` | reset (active-high) |
-| btnU/btnL/btnR/btnD | `btnU/L/R/D` | declared, unused (reserved) |
 | sw(15) | `O_PMODAMP2_GAIN` | AMP gain: 0 = 12 dB, 1 = 6 dB |
 | sw(14) | `O_PMODAMP2_SHUTD` | AMP shutdown: 0 = off, 1 = on |
 | JB1 / JB3 | `ps2_dat` / `ps2_clk` | PS/2 keyboard |

@@ -137,5 +137,7 @@ Confirmed against `time_pilot_de10_lite.vhd` and the built `time_pilot_basys3.vh
 
 ## 10. Known limitation
 
+Dip switches 1–8 confirmed working on hardware.
+
 TODO: The 15 kHz bypass mode is wired into the scandoubler (`enable_scandoubling`) but hardcoded to
 `'1'` (VGA output only) — no switch is wired to toggle it at runtime.

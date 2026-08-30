@@ -99,4 +99,4 @@ patch -p1 --dry-run < contrib/basys3/code/pooyan_de10_lite_to_basys3.patch
 
 - Whether the `blankn` gating before the doubler is redundant (if the core already emits black
   pixels during blank) — to be confirmed on hardware.
-- 15 kHz bypass mode and dip-switch 1–8 wiring remain unverified.
+- 15 kHz bypass mode remains not connected. Dip switches 1–8 confirmed working on hardware.

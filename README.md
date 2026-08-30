@@ -11,7 +11,7 @@ source of truth for that machine's design and build.
 
 ## Status
 
-Time-Pilot-by-Dar, Pooyan-by-Dar, Bagman-FPGA-Dar, Berzerk-FPGA-by-Dar, Burnin-Rubber-by-Dar and Galaga-Midway-by-Dar are complete,
+Time-Pilot-by-Dar, Pooyan-by-Dar, Bagman-FPGA-Dar, Berzerk-FPGA-by-Dar, Burnin-Rubber-by-Dar, Galaga-Midway-by-Dar, Tron-by-Dar and Popeye-by-Dar are complete,
 fully-scripted, hardware-verified ports.
 
 Every machine directory now carries a scripted setup: `contrib/tools/setup_<game>.sh`

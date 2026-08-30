@@ -188,5 +188,5 @@ authors the new `pooyan_basys3.vhd` top level and emits
 
 ## TODO
 
-- Dip switches 1–8 are wired but unverified on hardware.
-- 15 kHz display is unverified and needs a switch wired to enable/disable TV mode.
+- Dip switches 1–8 confirmed working on hardware.
+- 15 kHz display is not connected; needs a switch wired to enable/disable TV mode.

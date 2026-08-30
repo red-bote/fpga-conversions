@@ -1,3 +1,12 @@
+# Fix YM2149 read-back when Port A is configured as input.
+#
+# p_rdata (combinational) drives the read-back data bus O_DA and,
+# for addr = x"E" with Port A as input, selects ioa_inreg. That signal was
+# missing from the process sensitivity list, so a Port A input change did not
+# re-evaluate the process and read-back data went stale until addr/reg changed.
+# ioa_inreg is combinational (ioa_inreg <= I_IOA), so this is a real
+# simulation/logic bug, not just a lint warning. Added ioa_inreg to the list.
+# See README.md "Applying the linmix sensitivity fix" for details.
 diff --git a/vhdl_popeye_rev_0_3_2020_01_27/rtl_mikej/ym_2149_linmix.vhd b/vhdl_popeye_rev_0_3_2020_01_27/rtl_mikej/ym_2149_linmix.vhd
 --- a/vhdl_popeye_rev_0_3_2020_01_27/rtl_mikej/ym_2149_linmix.vhd
 +++ b/vhdl_popeye_rev_0_3_2020_01_27/rtl_mikej/ym_2149_linmix.vhd

@@ -16,11 +16,12 @@
 
 - Single core clock: **40 MHz**, derived from the 100 MHz Basys 3 oscillator by `clk_wiz_0`.
 - Solved MMCM (per machine `README.md`): `DIVCLK_DIVIDE=1`, `CLKFBOUT_MULT_F=10.0`,
-  `CLKOUT0_DIVIDE_F=25.0`. Reset active-high (`btnC`), `locked` used.
+  `CLKOUT0_DIVIDE_F=25.0`. Reset active-high (`btnC`).
 
 ## 3. Reset polarity
 
-- **Basys 3:** `reset <= btnC or not mmcm_locked;` (Berzerk/Bagman/Pooyan pattern), planned.
+- **Basys 3:** `reset <= btnC` with `clk_wiz_0` `locked => open` (Tron pattern, the confirmed
+  sibling MCR reference) — no MMCM-locked reset term.
 
 ## 4. Video (31 kHz VGA / 15 kHz TV)
 
