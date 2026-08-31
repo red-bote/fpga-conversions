@@ -11,7 +11,7 @@ source of truth for that machine's design and build.
 
 ## Status
 
-Time-Pilot-by-Dar, Pooyan-by-Dar, Bagman-FPGA-Dar, Berzerk-FPGA-by-Dar, Burnin-Rubber-by-Dar, Galaga-Midway-by-Dar, Tron-by-Dar and Popeye-by-Dar are complete,
+Time-Pilot-by-Dar, Pooyan-by-Dar, Bagman-FPGA-Dar, Berzerk-FPGA-by-Dar, Burnin-Rubber-by-Dar, Galaga-Midway-by-Dar, Tron-by-Dar, Kick-Midway-MCR-by-Dar and Popeye-by-Dar are complete,
 fully-scripted, hardware-verified ports.
 
 Every machine directory now carries a scripted setup: `contrib/tools/setup_<game>.sh`
@@ -78,6 +78,14 @@ The manual equivalents, if needed:
 Tool/path resolution is `ENV_VAR → project default → interactive prompt`:
 Vivado `VIVADO` → `/tools/Xilinx/Vivado/2020.2/bin/vivado`; roms `ROMZIP` →
 `~/roms/`.
+
+Each machine Makefile prints a display-mode reminder via its `make help` target and
+at the end of `make all` / `make bitstream`: if nothing appears on the display after
+loading the bitstream, first try toggling the display mode (F8 on the PS/2 keyboard,
+or sw(13); per-machine detail in the machine README) before troubleshooting further.
+`make all-<machine>` / `make bitstream-<machine>` show it too, because they delegate
+to the machine `all` / `bitstream`. Machines with no display-mode toggle print no
+reminder.
 
 ## Common Basys 3 platform
 

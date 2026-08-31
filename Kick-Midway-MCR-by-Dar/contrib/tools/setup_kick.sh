@@ -56,6 +56,7 @@ unzip -o "$ZIP" -d "$ROOT"
 step "3/4 Applying fix patches (contrib/*/code/*.patch and contrib/code/*.patch)"
 for p in "$ROOT"/contrib/*/code/*.patch "$ROOT"/contrib/code/*.patch; do
     [ -e "$p" ] || continue
+    case "$p" in *_de10_lite_to_basys3.patch) continue ;; esac
     echo "==> applying $p"
     patch -p1 --forward < "$p"
 done

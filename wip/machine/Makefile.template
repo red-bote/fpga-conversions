@@ -7,9 +7,21 @@ TOOLS        := contrib/tools
 BASYS3_TOOLS := contrib/basys3/tools
 VIVADO       := contrib/basys3/vivado
 
-.PHONY: all setup create_prj clk_wiz patch synth bitstream clean
+# External IO summary (printed by `make help`) and display-mode switching input
+# (printed by `make help` and at the end of `make all`/`make bitstream`).
+IO_SUMMARY   := <io_summary>    # e.g. "PS/2 keyboard (JB); JA joystick; ..." ; empty if none
+DISPLAY_HINT := <display_hint>  # e.g. "F8 toggles 31 kHz VGA / 15 kHz TV" ; empty if none
+
+DISPLAY_REMINDER := @echo "REMINDER: if nothing appears on the display, first try toggling the display mode: $(DISPLAY_HINT)."
+
+define display_reminder
+	$(if $(DISPLAY_HINT),$(DISPLAY_REMINDER))
+endef
+
+.PHONY: all setup create_prj clk_wiz patch synth bitstream clean help
 
 all: setup clk_wiz patch
+	$(display_reminder)
 
 setup:
 	$(TOOLS)/setup_<game>.sh
@@ -31,6 +43,12 @@ synth: setup clk_wiz patch
 # Implementation + write_bitstream (depends on synthesis).
 bitstream: synth
 	$(BASYS3_TOOLS)/make_<game>_basys3_bitstream.sh bitstream
+	$(display_reminder)
 
 clean:
 	rm -rf <src_dir>
+
+help:
+	@echo "<game> Basys 3 port. External IO used: $(IO_SUMMARY)"
+	@echo "Steps: setup create_prj clk_wiz patch synth bitstream all clean (default: all)"
+	$(display_reminder)

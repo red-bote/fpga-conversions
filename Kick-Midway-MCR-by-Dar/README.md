@@ -34,7 +34,7 @@ notes.
 
 JA joystick (active-low, switch to GND):
 - JA1 = Spin right, JA2 = Spin left, JA3 = Down, JA4 = Up (kick), JA7 = Fire (speed up)
-- Coin = Fire + Down together; Start 1 = Fire + Left together; Start 2 = Fire + Right together
+- Coin / Start come from the default buttons (btnU/btnL/btnR) or keyboard F1/F2/F3.
 
 ## IO mapping
 
@@ -42,13 +42,17 @@ JA joystick (active-low, switch to GND):
 |------------------|--------------|----------|
 | clk (W5, 100 MHz) | `clk` | clock into `clk_wiz_0` MMCM |
 | btnC | `btnC` | reset (active-high) |
+| btnU | `btnU` | coin-in (coin1), OR-merged with keyboard F1 |
+| btnD | `btnD` | second coin-in (coin2), sole source (no keyboard/JA path) |
+| btnL | `btnL` | P1 start, OR-merged with keyboard F2 |
+| btnR | `btnR` | P2 start, OR-merged with keyboard F3 |
 | sw(15) | `O_PMODAMP2_GAIN` | AMP gain: 0 = 12 dB, 1 = 6 dB |
 | sw(14) | `O_PMODAMP2_SHUTD` | AMP shutdown: 0 = off, 1 = on |
 | JB1 / JB3 | `ps2_dat` / `ps2_clk` | PS/2 keyboard |
 | JA1-JA4, JA7 | `JA(0..4)` | joystick (active-low) |
 | JC (PmodAMP2) | `O_PMODAMP2_AIN` | PWM audio (left channel; JC1=AIN, JC2=GAIN, JC4=SHUTD) |
 | VGA | `vgaRed/vgaGreen/vgaBlue(3:0)`, `vgaHsync`, `vgaVsync` | 4-4-4 RGB, 31 kHz |
-| LEDs | `led(15:0)` | present |
+| LEDs | — | unused/reserved (no `led` port on `kick_basys3`) |
 
 ## Scripted setup
 

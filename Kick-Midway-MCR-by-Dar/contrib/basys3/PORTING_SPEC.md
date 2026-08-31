@@ -6,11 +6,6 @@
   repo-root `downloads.md`) → `vhdl_kick_rev_0_2_2019_11_22/` at the machine root.
 - Top entity: `kick_basys3` (target file `sources_1/new/kick_basys3.vhd`).
 - Part: `xc7a35tcpg236-1`, VHDL target language.
-- Status: **not yet fully brought up** — `contrib/basys3/vivado/create_project.sh` is real and
-  machine-specific, but the `.xdc`/`.xpr`/top-level wrapper it stages don't exist yet (root
-  `README.md` Status section). This spec records the porting decisions already fixed by the
-  machine `README.md`; sections below are design intent for the not-yet-authored top level,
-  not a description of an existing build.
 
 ## 2. Clocking
 
@@ -39,15 +34,14 @@
 
 - PS/2 keyboard + `kbd_joystick`, OR-merged with the JA joystick (active-low, invert to
   active-high): `JA1=Spin right, JA2=Spin left, JA3=Down, JA4=Up(kick), JA7=Fire(speed up)`.
-- Coin = JA fire+up combo (OR keyboard F1); Start 1 = JA fire+left combo (OR keyboard F2);
-  Start 2 = keyboard F3.
-- `btnU`/`btnL`/`btnR`/`btnD` declared but unused/reserved (per machine `README.md` IO table).
+- Coin1 = keyboard F1 or `btnU`; Start 1 = keyboard F2 or `btnL`; Start 2 = keyboard F3 or
+  `btnR` — per root `PORTING_SPEC.md` §3's default button mapping. No fire+direction combos.
+- Coin2 = `btnD` only (the core's second coin input; no keyboard or JA path maps to it).
 
 ## 7. LEDs
 
-- `led(15:0)` present (per machine `README.md` IO table) — unlike Bagman/Berzerk/Pooyan/
-  Time-Pilot, this port does wire LEDs; exact source signal to be confirmed against the core
-  when the top level is authored.
+- Unused/reserved — the authored `kick_basys3` top level declares no `led` port, matching the
+  Bagman/Berzerk/Pooyan/Time-Pilot/Tron convention.
 
 ## 8. Shared conventions & hard rules
 
@@ -61,6 +55,5 @@
 
 ## 9. Open items
 
-- `.xdc`/`.xpr` (contrib/basys3/vivado/), `make_clk_wiz_0.sh`, the top-level wrapper
-  (`make_de10_lite_to_basys3_patch.sh`), and the synth/bitstream driver script all remain to be
-  authored before `make create_prj`/`clk_wiz`/`patch`/`synth`/`bitstream` can run.
+- Physical Basys 3 hardware bring-up (the build chain through bitstream is scripted and
+  verified; no software/build items remain).

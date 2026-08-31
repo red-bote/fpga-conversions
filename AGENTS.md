@@ -88,9 +88,5 @@ Idempotent. `--check` for CI, `--align` for column alignment.
   CPU/speech ROMs absent from the plain set.
 - Galaga and Burnin' Rubber import `mist/scandoubler.v` (15 kHz core output);
   Time Pilot and Pooyan import `vga_scandoubler.v` (DECA).
-- Three machines still need a full Basys 3 hardware bring-up: Kick,
-  Sky Skipper, and Solar Fox. Each has a real, machine-specific
-  `contrib/basys3/vivado/create_project.sh`, but they still need their
-  `.xdc`/`.xpr` and top-level wrapper created before synthesis can begin.
 - The shipped `make_<game>_proms.bat` files have CRLF endings; `prep_roms.sh`
   converts them to LF via sed before execution.

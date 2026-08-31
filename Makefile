@@ -18,6 +18,7 @@ TIME_PILOT  := Time-Pilot-by-Dar
 BAGMAN      := Bagman-FPGA-Dar
 BERZERK     := Berzerk-FPGA-by-Dar
 TRON        := Tron-by-Dar
+KICK        := Kick-Midway-MCR-by-Dar
 
 # Bare `make` prints help instead of running a build.
 .DEFAULT_GOAL := help
@@ -131,7 +132,9 @@ clean-bagman:
         setup-berzerk create-prj-berzerk clk-wiz-berzerk patch-berzerk \
         synth-berzerk bitstream-berzerk all-berzerk clean-berzerk \
         setup-tron create-prj-tron clk-wiz-tron patch-tron \
-        synth-tron bitstream-tron all-tron clean-tron
+        synth-tron bitstream-tron all-tron clean-tron \
+        setup-kick create-prj-kick clk-wiz-kick patch-kick \
+        synth-kick bitstream-kick all-kick clean-kick
 
 # ---- Berzerk ----
 setup-berzerk:
@@ -183,6 +186,31 @@ all-tron:
 clean-tron:
 	$(MAKE) -C "$(TRON)" clean
 
+# ---- Kick ----
+setup-kick:
+	$(MAKE) -C "$(KICK)" setup
+
+create-prj-kick:
+	$(MAKE) -C "$(KICK)" create_prj
+
+clk-wiz-kick:
+	$(MAKE) -C "$(KICK)" clk_wiz
+
+patch-kick:
+	$(MAKE) -C "$(KICK)" patch
+
+synth-kick:
+	$(MAKE) -C "$(KICK)" synth
+
+bitstream-kick:
+	$(MAKE) -C "$(KICK)" bitstream
+
+all-kick:
+	$(MAKE) -C "$(KICK)" all
+
+clean-kick:
+	$(MAKE) -C "$(KICK)" clean
+
 help:
 	@echo "Top-level port driver. Each step delegates to the machine's own Makefile."
 	@echo "Usage: make <step>-<machine>"
@@ -194,6 +222,7 @@ help:
 	@echo "  Bagman      : setup create-prj clk-wiz patch synth bitstream all clean"
 	@echo "  Berzerk     : setup create-prj clk-wiz patch synth bitstream all clean"
 	@echo "  Tron        : setup create-prj clk-wiz patch synth bitstream all clean"
+	@echo "  Kick        : setup create-prj clk-wiz patch synth bitstream all clean"
 	@echo
 	@echo "Examples:"
 	@echo "  make setup-galaga      make synth-time-pilot      make bitstream-pooyan"
