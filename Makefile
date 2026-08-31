@@ -19,6 +19,8 @@ BAGMAN      := Bagman-FPGA-Dar
 BERZERK     := Berzerk-FPGA-by-Dar
 TRON        := Tron-by-Dar
 KICK        := Kick-Midway-MCR-by-Dar
+BURGER_TIME := Burger-Time-by-Dar
+DEFENDER    := Defender-by-Dar
 
 # Bare `make` prints help instead of running a build.
 .DEFAULT_GOAL := help
@@ -211,6 +213,56 @@ all-kick:
 clean-kick:
 	$(MAKE) -C "$(KICK)" clean
 
+# ---- BurgerTime ----
+setup-burger-time:
+	$(MAKE) -C "$(BURGER_TIME)" setup
+
+create-prj-burger-time:
+	$(MAKE) -C "$(BURGER_TIME)" create_prj
+
+clk-wiz-burger-time:
+	$(MAKE) -C "$(BURGER_TIME)" clk_wiz
+
+patch-burger-time:
+	$(MAKE) -C "$(BURGER_TIME)" patch
+
+synth-burger-time:
+	$(MAKE) -C "$(BURGER_TIME)" synth
+
+bitstream-burger-time:
+	$(MAKE) -C "$(BURGER_TIME)" bitstream
+
+all-burger-time:
+	$(MAKE) -C "$(BURGER_TIME)" all
+
+clean-burger-time:
+	$(MAKE) -C "$(BURGER_TIME)" clean
+
+# ---- Defender ----
+setup-defender:
+	$(MAKE) -C "$(DEFENDER)" setup
+
+create-prj-defender:
+	$(MAKE) -C "$(DEFENDER)" create_prj
+
+clk-wiz-defender:
+	$(MAKE) -C "$(DEFENDER)" clk_wiz
+
+patch-defender:
+	$(MAKE) -C "$(DEFENDER)" patch
+
+synth-defender:
+	$(MAKE) -C "$(DEFENDER)" synth
+
+bitstream-defender:
+	$(MAKE) -C "$(DEFENDER)" bitstream
+
+all-defender:
+	$(MAKE) -C "$(DEFENDER)" all
+
+clean-defender:
+	$(MAKE) -C "$(DEFENDER)" clean
+
 help:
 	@echo "Top-level port driver. Each step delegates to the machine's own Makefile."
 	@echo "Usage: make <step>-<machine>"
@@ -223,6 +275,8 @@ help:
 	@echo "  Berzerk     : setup create-prj clk-wiz patch synth bitstream all clean"
 	@echo "  Tron        : setup create-prj clk-wiz patch synth bitstream all clean"
 	@echo "  Kick        : setup create-prj clk-wiz patch synth bitstream all clean"
+	@echo "  BurgerTime  : setup create-prj clk-wiz patch synth bitstream all clean"
+	@echo "  Defender    : setup create-prj clk-wiz patch synth bitstream all clean"
 	@echo
 	@echo "Examples:"
 	@echo "  make setup-galaga      make synth-time-pilot      make bitstream-pooyan"

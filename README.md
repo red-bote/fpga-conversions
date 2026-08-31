@@ -11,8 +11,14 @@ source of truth for that machine's design and build.
 
 ## Status
 
-Time-Pilot-by-Dar, Pooyan-by-Dar, Bagman-FPGA-Dar, Berzerk-FPGA-by-Dar, Burnin-Rubber-by-Dar, Galaga-Midway-by-Dar, Tron-by-Dar, Kick-Midway-MCR-by-Dar and Popeye-by-Dar are complete,
-fully-scripted, hardware-verified ports.
+Time-Pilot-by-Dar, Pooyan-by-Dar, Bagman-FPGA-Dar, Berzerk-FPGA-by-Dar, Burnin-Rubber-by-Dar, 
+Galaga-Midway-by-Dar, Tron-by-Dar, Kick-Midway-MCR-by-Dar, Burger-Time-by-Dar 
+and Popeye-by-Dar are complete, fully-scripted, hardware-verified ports.
+
+Defender-by-Dar is fully scripted (assets authored end to end from the
+BurgerTime/Burnin-Rubber reference, same scandoubler core-family wiring) but
+not yet hardware-verified: `make setup create_prj clk_wiz patch` are
+exercisable; `make synth` / `make bitstream` have not been run.
 
 Every machine directory now carries a scripted setup: `contrib/tools/setup_<game>.sh`
 (fetches the Dar archive into a gitignored `dloads/` cache with an embedded
@@ -28,6 +34,8 @@ SHA-256 check, extracts it, applies any synthesis-fix patches) chaining into
 | Berzerk (Stern 1980) | 10 MHz | `basys3/berzerk_basys3.xpr`, `berzerk_basys3` | `berzerk_reset_sensitivity.patch` | `berzerk.zip` |
 | Bagman (Stern 1982) | 12 MHz | `basys3/bagman_basys3.xpr`, `bagman_basys3` | `bagman_xor_width.patch` | `bagman.zip` |
 | Burnin' Rubber (Data East 1982) | 12 + 6 MHz | `basys3/burnin_rubber_basys3.xpr`, `burnin_rubber_basys3` | — | `brubber.zip` |
+| BurgerTime (Data East 1982) | 12 + 6 MHz | `basys3/burger_time_basys3.xpr`, `burger_time_basys3` | — | `btime.zip` |
+| Defender (Williams 1981) | 12 + 3.58 MHz | `basys3/defender_basys3.xpr`, `defender_basys3` | — | `defender.zip` |
 | Galaga (Namco/Midway 1981) | 36 MHz | `basys3/galaga_basys3.xpr`, `galaga_basys3` | `galaga_bgpalette_xor_length_fix.patch`, `galaga_credit_mode_fix.patch`, `galaga_vga_sync.patch` | `galaga.zip` + `galagamw.zip` |
 | Kick (Midway MCR 1981) | 40 MHz | `basys3/kick_basys3.xpr`, `kick_basys3` | — | `kick.zip` |
 | Popeye (Nintendo 1982) | 40.32 MHz | `basys3/popeye_basys3.xpr`, `popeye_basys3` | `popeye_linmix_sensitivity.patch` | `popeye.zip` + `popeyeu.zip` |
