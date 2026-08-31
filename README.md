@@ -21,14 +21,20 @@ not yet hardware-verified: `make setup create_prj clk_wiz patch` are
 exercisable; `make synth` / `make bitstream` have not been run.
 
 Phoenix-by-Dar is fully scripted, synthesized, and bitstream-built
-(0 critical warnings/errors through implementation) but not yet
-hardware-verified. Its core exposes only composite sync and only a PS/2
-keyboard input, unlike every other machine in this project; the Basys3
-wrapper adds a duration-threshold composite-sync separator (new wrapper-only
-logic feeding the imported MiST scandoubler) and a control-input patch to
-the pristine core (`contrib/code/phoenix_expose_control_ports.patch`) —
-both unverified until hardware bring-up. See
-`Phoenix-by-Dar/contrib/basys3/PORTING_SPEC.md` for the full design record.
+(0 critical warnings/errors through implementation). Hardware bring-up has
+confirmed PS/2 keyboard, sound, and VGA display all working. Its core
+otherwise exposed only composite sync and only a PS/2 keyboard input,
+unlike every other machine in this project; `contrib/code/phoenix_expose_hsync_vsync.patch`
+(a two-file patch) exposes real hsync/vsync from the core for the imported
+MiST scandoubler, replacing an earlier wrapper-only composite-sync
+separator that hardware-tested with no display. A separate patch adding
+external control ports (JA joystick / dedicated buttons) was tried and
+hardware-tested with no input registering at all; a repo-wide search found
+no other core in this project needed a similar patch, so there was no
+validated reference to debug against, and it has been reverted — Phoenix
+is PS/2-keyboard only. See
+`Phoenix-by-Dar/contrib/basys3/PORTING_SPEC.md` for the full design
+record.
 
 Every machine directory now carries a scripted setup: `contrib/tools/setup_<game>.sh`
 (fetches the Dar archive into a gitignored `dloads/` cache with an embedded
@@ -49,7 +55,7 @@ SHA-256 check, extracts it, applies any synthesis-fix patches) chaining into
 | Galaga (Namco/Midway 1981) | 36 MHz | `basys3/galaga_basys3.xpr`, `galaga_basys3` | `galaga_bgpalette_xor_length_fix.patch`, `galaga_credit_mode_fix.patch`, `galaga_vga_sync.patch` | `galaga.zip` + `galagamw.zip` |
 | Kick (Midway MCR 1981) | 40 MHz | `basys3/kick_basys3.xpr`, `kick_basys3` | — | `kick.zip` |
 | Popeye (Nintendo 1982) | 40.32 MHz | `basys3/popeye_basys3.xpr`, `popeye_basys3` | `popeye_linmix_sensitivity.patch` | `popeye.zip` + `popeyeu.zip` |
-| Phoenix (Amstar 1980) | 11 + 50 MHz | `basys3/phoenix_basys3.xpr`, `phoenix_basys3` | `phoenix_expose_control_ports.patch` | `phoenix.zip` |
+| Phoenix (Amstar 1980) | 11 + 50 MHz | `basys3/phoenix_basys3.xpr`, `phoenix_basys3` | `phoenix_expose_hsync_vsync.patch` | `phoenix.zip` |
 | Pooyan (Konami 1982) | 12 + 14 MHz | `basys3/pooyan_basys3/pooyan_basys3.xpr`, `pooyan_basys3` | `pooyan_de10_lite_to_basys3.patch`, `pooyan_t80_xor_width.patch` | `pooyan.zip` |
 | Sky Skipper (Nintendo 1981) | 40 MHz | `basys3/sky_skipper_basys3.xpr`, `sky_skipper_basys3` | — | `skyskipr.zip` |
 | Solar Fox (Bally Midway 1981) | 40 MHz | `basys3/solar_fox_basys3.xpr`, `solar_fox_basys3` | — | `solarfox.zip` |
@@ -113,15 +119,14 @@ port map): PS/2 keyboard on JB, JA joystick (active-low, switch to GND)
 OR-merged with it, mono (or left-channel) PWM audio on PmodAMP2 at JC, 4-4-4 RGB
 VGA, and `btnC` = reset (active-high). `sw14` = sound enable, `sw15` = AMP gain.
 Video is 31 kHz progressive VGA; scan doubling is either built into the core or
-added via an imported scandoubler. Per machine: Galaga and Burnin' Rubber import
-`mist/scandoubler.v` (their cores output 15 kHz only); Time Pilot and Pooyan
+added via an imported scandoubler. Per machine: Galaga, Burnin' Rubber, and
+Phoenix import `mist/scandoubler.v` (their cores output 15 kHz only; Phoenix's
+core needed a patch to expose hsync/vsync in the first place, unlike
+Galaga/Burnin-Rubber's native ones — see
+`Phoenix-by-Dar/contrib/basys3/PORTING_SPEC.md`); Time Pilot and Pooyan
 import `vga_scandoubler.v` (DECA); Bagman and Berzerk instantiate Dar's
 `line_doubler` inside the core; Kick, Popeye, Sky Skipper and Solar Fox generate
-progressive 31 kHz natively in the core (`tv15Khz_mode = '0'`). Phoenix also
-imports `mist/scandoubler.v`, but its core exposes only composite sync (no
-native hsync/vsync at all, unlike Galaga/Burnin-Rubber) — the Basys3 wrapper
-adds a duration-threshold sync separator ahead of the scandoubler; see
-`Phoenix-by-Dar/contrib/basys3/PORTING_SPEC.md`.
+progressive 31 kHz natively in the core (`tv15Khz_mode = '0'`).
 
 ## Shared tools
 

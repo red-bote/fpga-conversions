@@ -18,11 +18,12 @@
 #    to a different target file), not a fix to apply to the pristine tree.
 #    Excludes *scandoubler_fix.patch: applied later to the imported scandoubler
 #    copy by create_project.sh, not to the pristine Dar tree.
-#    contrib/code/phoenix_expose_control_ports.patch adds external
-#    coin/start/fire/direction input ports to rtl_dar/phoenix.vhd (the
-#    pristine entity otherwise only accepts a PS/2 keyboard scancode
-#    stream), OR-merged with the existing PS/2-derived controls; see
-#    contrib/basys3/PORTING_SPEC.md.
+#    contrib/code/phoenix_expose_hsync_vsync.patch expose real hsync/vsync
+#    from the core (the pristine design only produces composite sync); see
+#    contrib/basys3/PORTING_SPEC.md. An earlier patch adding external
+#    coin/start/fire/direction ports to rtl_dar/phoenix.vhd was tried and
+#    reverted (no input registered on hardware) -- Phoenix is PS/2-keyboard
+#    only.
 # 4. Run contrib/tools/prep_roms.sh (compile make_vhdl_prom, run the
 #    reconstructed make_phoenix_proms.sh, unzip romset, generate PROM VHDL).
 #

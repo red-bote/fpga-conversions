@@ -1,0 +1,64 @@
+diff --git a/vhdl_phoenix_DE10_lite/rtl_dar/phoenix_video.vhd b/vhdl_phoenix_DE10_lite/rtl_dar/phoenix_video.vhd
+--- a/vhdl_phoenix_DE10_lite/rtl_dar/phoenix_video.vhd
++++ b/vhdl_phoenix_DE10_lite/rtl_dar/phoenix_video.vhd
+@@ -16,6 +16,8 @@
+  hcnt     : out std_logic_vector(9 downto 1);
+  vcnt     : out std_logic_vector(8 downto 1);
+  sync     : out std_logic;
++ hsync    : out std_logic;
++ vsync    : out std_logic;
+  adrsel   : out std_logic;
+  rdy      : out std_logic;
+  vblank       : out std_logic;
+@@ -161,6 +163,10 @@
+ adrsel <= vblank_n and hcnt_i(9);
+ 
+ vblank       <= not vblank_n;
++-- real, separately-generated syncs for external scan-doubling; no RS-170
++-- serration needed here, that only exists for single-wire composite consumers.
++hsync <= pulse_a;   -- per-line pulse, active-low, fixed position every line
++vsync <= vblank_n;  -- already active-low during the 48-line vblank window
+ hblank_frgrd <= hstb_i;
+ hblank_bkgrd <= not(hcnt_i(9) and q1) and not(hcnt_i(9) and (q2));
+ 
+diff --git a/vhdl_phoenix_DE10_lite/rtl_dar/phoenix.vhd b/vhdl_phoenix_DE10_lite/rtl_dar/phoenix.vhd
+--- a/vhdl_phoenix_DE10_lite/rtl_dar/phoenix.vhd
++++ b/vhdl_phoenix_DE10_lite/rtl_dar/phoenix.vhd
+@@ -23,8 +23,8 @@
+  video_clk    : out std_logic;
+  video_csync  : out std_logic;
+ -- video_blank  : out std_logic;
+--- video_hs     : out std_logic;
+--- video_vs     : out std_logic;
++ video_hs     : out std_logic;
++ video_vs     : out std_logic;
+  audio_select : in std_logic_vector(2 downto 0);
+  audio        : out std_logic_vector(11 downto 0)
+ );
+@@ -39,6 +39,8 @@
+  signal hcnt   : std_logic_vector(9 downto 1);
+  signal vcnt   : std_logic_vector(8 downto 1);
+  signal sync   : std_logic;
++ signal hsync  : std_logic;
++ signal vsync  : std_logic;
+  signal adrsel : std_logic; 
+  signal rdy    : std_logic; 
+  signal vblank       : std_logic;
+@@ -141,6 +143,8 @@
+  hcnt     => hcnt,
+  vcnt     => vcnt,
+  sync     => sync,
++ hsync    => hsync,
++ vsync    => vsync,
+  adrsel   => adrsel, -- RAM address selector ('0')cpu / ('1')video_generator
+  rdy      => rdy,    -- Ready ('1')cpu can access RAMs read/write 
+  vblank       => vblank,
+@@ -262,6 +266,8 @@
+ -- output video to top level
+ video_clk   <= hclk;
+ video_csync <= sync;
++video_hs    <= hsync;
++video_vs    <= vsync;
+ video_r     <= rgb_1(0) & rgb_0(0);
+ video_g     <= rgb_1(2) & rgb_0(2);
+ video_b     <= rgb_1(1) & rgb_0(1);

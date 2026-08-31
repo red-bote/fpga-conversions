@@ -5,7 +5,7 @@ VIVADO       := contrib/basys3/vivado
 
 # External IO summary (printed by `make help`) and display-mode switching input
 # (printed by `make help` and at the end of `make all`/`make bitstream`).
-IO_SUMMARY   := PS/2 keyboard (JB); JA joystick (active-low: right, left, up=shield, center=fire; down unused, the game has no down input); btnC=reset; btnU=coin1; btnL=start1, btnR=start2; dip switches sw(7:0), audio_select sw(10:8); JC PmodAMP2 PWM audio; sw(14)=sound enable, sw(15)=AMP gain, sw(13)=display mode; VGA 4-4-4 RGB
+IO_SUMMARY   := PS/2 keyboard (JB, only input -- JA joystick/buttons tried and reverted, see PORTING_SPEC.md); btnC=reset; dip switches sw(7:0), audio_select sw(10:8); JC PmodAMP2 PWM audio; sw(14)=sound enable, sw(15)=AMP gain, sw(13)=display mode; VGA 4-4-4 RGB
 DISPLAY_HINT := sw(13): 0 = 31 kHz VGA, 1 = 15 kHz TV
 
 DISPLAY_REMINDER := @echo "REMINDER: if nothing appears on the display, first try toggling the display mode: $(DISPLAY_HINT)."

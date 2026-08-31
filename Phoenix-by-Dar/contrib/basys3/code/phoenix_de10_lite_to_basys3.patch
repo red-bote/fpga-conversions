@@ -1,7 +1,7 @@
 diff --git a/vhdl_phoenix_DE10_lite/rtl_dar/phoenix_de10_lite.vhd b/vhdl_phoenix_DE10_lite/rtl_dar/phoenix_de10_lite.vhd
 --- a/vhdl_phoenix_DE10_lite/rtl_dar/phoenix_de10_lite.vhd
 +++ b/vhdl_phoenix_DE10_lite/rtl_dar/phoenix_de10_lite.vhd
-@@ -1,209 +1,274 @@
+@@ -1,209 +1,220 @@
 ----------------------------------------------------------------------------------
 --- DE10_lite Top level Phoenix by Dar (darfpga@aol.fr) (30/01/2025)
 --- http://darfpga.blogspot.fr
@@ -221,37 +221,46 @@ diff --git a/vhdl_phoenix_DE10_lite/rtl_dar/phoenix_de10_lite.vhd b/vhdl_phoenix
 +--  - 100 MHz board oscillator, clk_wiz_0 MMCM derives 11 MHz (clock_11, core
 +--    + pixel clock) and 50 MHz (clock_50, fed straight to the core's sound
 +--    effect/music blocks exactly like the pristine top's board oscillator)
-+--  - The phoenix core (rtl_dar/phoenix.vhd) exposes ONLY composite sync
-+--    (video_csync) -- no separate hsync/vsync exist anywhere in the pristine
-+--    design (see contrib/basys3/PORTING_SPEC.md). This wrapper derives
-+--    clean hs/vs from video_csync with a duration-threshold sync separator
-+--    (sync_separator process below), sampled on the core's own 5.5 MHz
-+--    video_clk output, then feeds the MiST scandoubler for 31 kHz VGA.
-+--    UNVERIFIED UNTIL HARDWARE BRING-UP: no Dar reference validates this for
-+--    this core. Plan B if it does not lock on hardware: patch
-+--    phoenix_video.vhd to expose real hsync/vsync from its internal
-+--    hcnt/vcnt counters (see PORTING_SPEC.md's "Video path" section).
-+--  - Display mode via sw(13): 0 = 31 kHz progressive VGA (scandoubler +
-+--    separator above), 1 = 15 kHz TV (video_csync straight onto vgaHsync,
-+--    vgaVsync held high, native RGB passed through) -- this branch exactly
-+--    reproduces the pristine DE10-lite top's own output path, so it is
-+--    expected to work regardless of whether the separator does.
++--  - The pristine phoenix core (rtl_dar/phoenix.vhd) exposed ONLY composite
++--    sync (video_csync) -- no separate hsync/vsync existed anywhere in the
++--    upstream design (see contrib/basys3/PORTING_SPEC.md). A first
++--    implementation attempt worked around this with a duration-threshold
++--    sync separator inferring hs/vs from video_csync in this wrapper;
++--    hardware bring-up confirmed sound and PS/2 keyboard working (core,
++--    clocking, reset all correct) but produced no VGA display. This wrapper
++--    now instead uses contrib/code/phoenix_expose_hsync_vsync.patch, which
++--    exposes real, separately-generated video_hs/video_vs from the core
++--    (derived from its already-internal pulse_a/vblank_n signals -- no
++--    threshold-guessing),
++--    fed directly into the MiST scandoubler for 31 kHz VGA, exactly like
++--    Burnin-Rubber/Galaga's native hs/vs wiring. Hardware bring-up confirmed
++--    this works (VGA display now appears).
++--  - Display mode via sw(13): 0 = 31 kHz progressive VGA (scandoubler,
++--    fed by the core's real hs/vs above), 1 = 15 kHz TV (video_csync
++--    straight onto vgaHsync, vgaVsync held high, native RGB passed through)
++--    -- this branch exactly reproduces the pristine DE10-lite top's own
++--    output path.
 +--  - The pristine phoenix entity accepts only a PS/2 keyboard scancode
-+--    stream (no coin/start/button ports exist on it at all). This port
-+--    applies contrib/code/phoenix_expose_control_ports.patch, which adds
-+--    ext_coin/ext_start1/ext_start2/ext_fire/ext_right/ext_left/ext_up
-+--    ports to rtl_dar/phoenix.vhd, OR-merged internally with the PS/2 path;
-+--    the PS/2 keyboard keeps working unmodified. This wrapper drives those
-+--    ports from the JA joystick (active-low, inverted) and dedicated
-+--    buttons; JA(2) (down) is present on the connector but unused -- the
-+--    game has no "down" input, only up (shield).
++--    stream (no coin/start/button ports exist on it at all). A patch
++--    (contrib/code/phoenix_expose_control_ports.patch) adding external
++--    coin/start/fire/direction ports, OR-merged internally with the PS/2
++--    path and driven from the wrapper's JA joystick + dedicated buttons,
++--    was tried and hardware-tested: no input registered at all (PS/2
++--    keyboard, sound, and video were all confirmed working on the same
++--    build). A repo-wide precedent search found Phoenix is the only core
++--    in this project with PS/2 decode inside the core and no native
++--    discrete-input ports, and that patch was the only one anywhere in the
++--    repo adding discrete control-input ports to a pristine core -- no
++--    comparable, validated implementation exists to debug against or copy
++--    (see contrib/basys3/PORTING_SPEC.md). The patch has been reverted;
++--    this port is PS/2-keyboard only.
 +--  - audio_select is 3 bits on the core (100/101/110/111 solo effect1/
 +--    effect2/effect3/melody, else mixed); wired to sw(10 downto 8) here
 +--    (the pristine DE10-lite top hardcodes it to "000", i.e. always mixed).
 +--  - Mono PWM audio on PmodAMP2 (JC); sw14 = shutdown, sw15 = gain select
 +--    (reproduces the pristine top's 13-bit accumulator verbatim).
 +--  - btnC = reset (also resets the MMCM; core held in reset until MMCM
-+--    lock). btnU = coin-in, btnL = P1 start, btnR = P2 start.
++--    lock). No other buttons or JA joystick are wired (see above).
 +--  - No led port: the pristine top's ledr assignment is a static debug
 +--    pattern ("101010101"), not core-driven, so it is omitted entirely --
 +--    matches Bagman/Pooyan/Time-Pilot/Berzerk/Burnin-Rubber's convention.
@@ -276,11 +285,7 @@ diff --git a/vhdl_phoenix_DE10_lite/rtl_dar/phoenix_de10_lite.vhd b/vhdl_phoenix
 + clk             : in  std_logic;
 + sw              : in  std_logic_vector(15 downto 0);
 + btnC            : in  std_logic;  -- reset
-+ btnL            : in  std_logic;  -- P1 start
-+ btnR            : in  std_logic;  -- P2 start
-+ btnU            : in  std_logic;  -- coin-in
 +
-+ JA              : in  std_logic_vector(4 downto 0);  -- joystick (movement + fire)
 + ps2_dat         : in  std_logic;
 + ps2_clk         : in  std_logic;
 +
@@ -328,21 +333,9 @@ diff --git a/vhdl_phoenix_DE10_lite/rtl_dar/phoenix_de10_lite.vhd b/vhdl_phoenix
 + signal video_clk : std_logic;
 + signal csync     : std_logic;
 +
-+ -- Composite-sync separator (see contrib/basys3/PORTING_SPEC.md "Video
-+ -- path"). Sampled on video_clk (5.5 MHz, the core's own pixel clock).
-+ -- Normal/equalizing sync pulses run ~2.35-4.7 us (~13-26 video_clk
-+ -- cycles); vsync serration pulses are broad low periods (~half a line).
-+ -- low_cnt latches vsync_active once csync has been continuously low past
-+ -- VS_THRESH_LOW; high_cnt clears it once csync has been continuously high
-+ -- past VS_THRESH_HIGH (longer than any serration notch), so the region's
-+ -- brief per-line notches don't chop vsync_active into multiple pulses.
-+ constant VS_THRESH_LOW  : unsigned(8 downto 0) := to_unsigned(176, 9); -- ~32 us: half a line, above the two short pulse widths
-+ constant VS_THRESH_HIGH : unsigned(8 downto 0) := to_unsigned(300, 9); -- ~54 us: longer than any notch, shorter than one line (352 cycles)
-+ constant CNT_MAX        : unsigned(8 downto 0) := (others => '1');    -- saturate low_cnt/high_cnt instead of wrapping
-+ signal low_cnt      : unsigned(8 downto 0) := (others => '0');
-+ signal high_cnt      : unsigned(8 downto 0) := (others => '0');
-+ signal vsync_active : std_logic := '0';
-+ signal hs, vs        : std_logic;
++ -- Real hsync/vsync from the core (contrib/code/phoenix_expose_hsync_vsync.patch)
++ -- -- direct connections, no separator needed.
++ signal hs, vs : std_logic;
 +
 + signal vga_r_i, vga_g_i, vga_b_i : std_logic_vector(5 downto 0);
 + signal vga_r_o, vga_g_o, vga_b_o : std_logic_vector(5 downto 0);
@@ -350,9 +343,6 @@ diff --git a/vhdl_phoenix_DE10_lite/rtl_dar/phoenix_de10_lite.vhd b/vhdl_phoenix
 +
 + signal audio           : std_logic_vector(11 downto 0);
 + signal pwm_accumulator : std_logic_vector(12 downto 0);
-+
-+ signal joy_up, joy_fire, joy_right, joy_left : std_logic;
-+ signal joy_coin, joy_start1, joy_start2      : std_logic;
 +
 +begin
 +
@@ -383,55 +373,11 @@ diff --git a/vhdl_phoenix_DE10_lite/rtl_dar/phoenix_de10_lite.vhd b/vhdl_phoenix
 +  video_b      => b,
 +  video_clk    => video_clk,
 +  video_csync  => csync,
++  video_hs     => hs,
++  video_vs     => vs,
 +  audio_select => sw(10 downto 8),
-+  audio        => audio,
-+
-+  ext_coin     => joy_coin,
-+  ext_start1   => joy_start1,
-+  ext_start2   => joy_start2,
-+  ext_fire     => joy_fire,
-+  ext_right    => joy_right,
-+  ext_left     => joy_left,
-+  ext_up       => joy_up
++  audio        => audio
 + );
-+
-+ -- JA active-low, inverted to active-high; JA(2) (down) unused, the game
-+ -- has no down input. Dedicated buttons OR the keyboard's own F1/F2/F3/coin
-+ -- path (unaffected, still handled inside the core).
-+ joy_right  <= not JA(0);
-+ joy_left   <= not JA(1);
-+ joy_up     <= not JA(3);
-+ joy_fire   <= not JA(4);
-+ joy_coin   <= btnU;
-+ joy_start1 <= btnL;
-+ joy_start2 <= btnR;
-+
-+ -- Composite-sync separator: derive hs/vs from video_csync.
-+ sync_separator : process(video_clk)
-+ begin
-+   if rising_edge(video_clk) then
-+     if csync = '0' then
-+       high_cnt <= (others => '0');
-+       if low_cnt /= CNT_MAX then
-+         low_cnt <= low_cnt + 1;
-+       end if;
-+       if low_cnt >= VS_THRESH_LOW then
-+         vsync_active <= '1';
-+       end if;
-+     else
-+       low_cnt <= (others => '0');
-+       if high_cnt /= CNT_MAX then
-+         high_cnt <= high_cnt + 1;
-+       end if;
-+       if high_cnt >= VS_THRESH_HIGH then
-+         vsync_active <= '0';
-+       end if;
-+     end if;
-+   end if;
-+ end process;
-+
-+ hs <= csync;
-+ vs <= vsync_active;
 +
 + -- Pad native 2-bit/channel RGB to the scan doubler's 6-bit/channel input
 + -- by triple replication. No external blanking gate is needed: the core

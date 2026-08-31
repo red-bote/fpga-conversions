@@ -16,23 +16,23 @@ archive for the original Dar release notes.
 ## Features supported
 
 - **Video**: 31 kHz progressive VGA via an imported MiST scandoubler
-  (`imports/mist/scandoubler.v`) fed by a duration-threshold composite-sync
-  separator authored in the wrapper (the pristine core exposes only
-  composite sync, no native hsync/vsync). sw(13) switches to 15 kHz TV mode
+  (`imports/mist/scandoubler.v`) fed by real hsync/vsync exposed from the
+  core (`contrib/code/phoenix_expose_hsync_vsync.patch` — the pristine core
+  otherwise exposes only composite sync). sw(13) switches to 15 kHz TV mode
   (native RGB + composite sync on HS, reproducing the pristine DE10-lite
   top's own output path). See `contrib/basys3/PORTING_SPEC.md` for the full
-  design record — **the sync separator is unverified until hardware
-  bring-up**.
+  design record.
 - **Scan doubler source**: downloaded the first build from
   https://raw.githubusercontent.com/DECAfpga/Arcade_Galaga/main/mist/scandoubler.v
   and stashed in `dloads/`; the stashed copy is reused for subsequent builds.
 - **Sound**: mono PWM audio on PmodAMP2; `audio_select` (3-bit, sw(10:8))
   selects effect1/effect2/effect3/melody solo or the default mix.
-- **Controls**: PS/2 keyboard (native, handled entirely inside the core) +
-  JA joystick/dedicated buttons (via `contrib/code/phoenix_expose_control_ports.patch`,
-  which adds external control ports to the pristine core — **unverified
-  until hardware bring-up**, see PORTING_SPEC.md); btnU = coin-in, btnL/btnR
-  = start 1/2, btnC = reset.
+- **Controls**: PS/2 keyboard only (native, handled entirely inside the
+  core). A JA joystick / dedicated buttons patch
+  (`contrib/code/phoenix_expose_control_ports.patch`) was tried and
+  hardware-tested: no input registered at all, on the same build where
+  keyboard, sound, and video were all confirmed working. It has been
+  reverted — see "Known issues" and `contrib/basys3/PORTING_SPEC.md`.
 
 | Input | Keyboard |
 |-------|----------|
@@ -43,21 +43,11 @@ archive for the original Dar release notes.
 | Start 1 | F1 |
 | Start 2 | F2 |
 
-JA joystick (active-low, switch to GND):
-- JA1 = Right, JA2 = Left, JA4 = Up/shield, JA7 = Fire
-- JA3 (down) is present on the connector but unused — the game has no down
-  input.
-
-Buttons (active-high):
-- btnU = coin-in, btnL = start 1, btnR = start 2, btnC = reset
-
 ## IO mapping
 
 | Basys 3 resource | Wrapper port | Function |
 |------------------|--------------|----------|
 | clk (W5, 100 MHz) | `clk` | clock into `clk_wiz_0` MMCM |
-| btnU | `btnU` | coin-in |
-| btnL / btnR | `btnL` / `btnR` | start 1 / start 2 |
 | btnC | `btnC` | reset (active-high) |
 | sw(7:0) | `sw(7 downto 0)` | dip switches (lives, bonus life, coin mode, upright/cocktail) |
 | sw(10:8) | `sw(10 downto 8)` | `audio_select`: solo effect1/2/3/melody or mixed |
@@ -65,7 +55,6 @@ Buttons (active-high):
 | sw(14) | `O_PMODAMP2_SHUTD` | AMP shutdown/enable: 0 = off, 1 = on |
 | sw(13) | `sw(13)` | display mode: 0 = VGA, 1 = 15 kHz TV |
 | JB1 / JB3 | `ps2_dat` / `ps2_clk` | PS/2 keyboard |
-| JA1, JA2, JA4, JA7 | `JA(0)`, `JA(1)`, `JA(3)`, `JA(4)` | right, left, up/shield, fire (active-low); JA3/`JA(2)` unused |
 | JC (PmodAMP2) | `O_PMODAMP2_AIN` | PWM audio (JC1=AIN, JC2=GAIN, JC4=SHUTD) |
 | VGA | `vgaRed/vgaGreen/vgaBlue(3:0)`, `vgaHsync`, `vgaVsync` | 4-4-4 RGB, 31 kHz VGA / 15 kHz TV |
 
@@ -75,8 +64,8 @@ Buttons (active-high):
 fetches the Dar archive into the gitignored `dloads/` cache (reused when its
 SHA-256 matches the hash embedded in the script; re-downloaded when missing
 or tampered), extracts it as `vhdl_phoenix_DE10_lite/` (the archive has no
-internal top-level folder, unlike every other machine's), applies
-`contrib/code/phoenix_expose_control_ports.patch`, then runs
+internal top-level folder, unlike every other machine's), applies the two
+fix patches (see "Fix patches" below), then runs
 `contrib/tools/prep_roms.sh` to compile `make_vhdl_prom`, run the
 reconstructed `make_phoenix_proms.sh` (the upstream archive ships no
 `.bat`/`tools_prom_src`), stage the romset from `$ROMZIP` (default
@@ -102,28 +91,38 @@ machine ROMs are copyrighted — never commit or redistribute them.
 
 ## Fix patches
 
-### `phoenix_expose_control_ports.patch`
+### `phoenix_expose_hsync_vsync.patch`
 
-Adds `ext_coin`/`ext_start1`/`ext_start2`/`ext_fire`/`ext_right`/`ext_left`/
-`ext_up` ports to the pristine `phoenix` entity (`rtl_dar/phoenix.vhd`),
-OR-merged with the existing PS/2-keyboard-derived controls — the pristine
-entity otherwise has no ports at all for a JA joystick or dedicated buttons.
+Two-file patch exposing real hsync/vsync end-to-end (the pristine core
+otherwise only produces composite sync):
+
+- Adds `hsync`/`vsync` output ports to the pristine `phoenix_video` entity
+  (`rtl_dar/phoenix_video.vhd`), assigned from its already-internal
+  `pulse_a` (per-line hsync pulse) and `vblank_n` (active-low vsync window)
+  signals.
+- Realizes the pristine `phoenix` entity's commented-out `video_hs`/
+  `video_vs` ports (`rtl_dar/phoenix.vhd`), relaying them from
+  `phoenix_video`'s new `hsync`/`vsync` outputs.
+
 Verify it took:
 
 ```
-grep -c ext_coin vhdl_phoenix_DE10_lite/rtl_dar/phoenix.vhd   # expect 2 (port decl + OR-merge)
+grep -n "hsync <= pulse_a" vhdl_phoenix_DE10_lite/rtl_dar/phoenix_video.vhd
+grep -c video_hs vhdl_phoenix_DE10_lite/rtl_dar/phoenix.vhd   # expect 2 (port decl + output assignment)
 ```
 
 ## Known issues
 
-- Not yet hardware-verified. Two parts of this port have no Dar reference to
-  validate against and are unverified until bring-up: the composite-sync
-  separator (video) and the external-control-port patch (inputs). See
-  `contrib/basys3/PORTING_SPEC.md` for both designs and their fallback plans.
+- No JA joystick / dedicated-button support. A patch adding external
+  control ports to the core (`phoenix_expose_control_ports.patch`) was
+  tried and hardware-tested: no input registered at all, on a build where
+  PS/2 keyboard, sound, and VGA display were all confirmed working. A
+  repo-wide search found no other core in this project needed a similar
+  patch (Phoenix uniquely decodes PS/2 inside the core with no native
+  discrete-input ports), so there was no validated reference to debug
+  against. Reverted — Phoenix is PS/2-keyboard only. See
+  `contrib/basys3/PORTING_SPEC.md` for the full record.
 
 ## Build status
 
-Fully scripted, synthesized, and bitstream-built: `make setup create_prj
-clk_wiz patch synth bitstream` all complete with 0 critical warnings and 0
-errors through implementation (placement WNS positive, 0 failed routing
-nets). Hardware bring-up has not been done.
+See root `README.md` §Status.
