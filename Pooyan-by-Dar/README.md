@@ -190,3 +190,5 @@ authors the new `pooyan_basys3.vhd` top level and emits
 
 - Dip switches 1–8 confirmed working on hardware.
 - 15 kHz display is not connected; needs a switch wired to enable/disable TV mode.
+- Pooyan lacks create_prj so eventually should be brought up to date with the rest.
+

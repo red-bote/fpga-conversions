@@ -6,11 +6,6 @@
   the repo-root `downloads.md`) → `vhdl_solar_fox_rev_0_1_2019_11_22/` at the machine root.
 - Top entity: `solar_fox_basys3` (target file `sources_1/new/solar_fox_basys3.vhd`).
 - Part: `xc7a35tcpg236-1`, VHDL target language.
-- Status: **not yet fully brought up** — `contrib/basys3/vivado/create_project.sh` is real and
-  machine-specific, but the `.xdc`/`.xpr`/top-level wrapper it stages don't exist yet (root
-  `README.md` Status section). This spec records the porting decisions already fixed by the
-  machine `README.md`; sections below are design intent for the not-yet-authored top level,
-  not a description of an existing build.
 
 ## 2. Clocking
 
@@ -39,14 +34,21 @@
 - PS/2 keyboard + `kbd_joystick`, OR-merged with the JA joystick (active-low, invert to
   active-high, "verified working" per machine `README.md`): `JA1=Right, JA2=Left, JA3=Down,
   JA4=Up, JA7=Fire`.
-- Coin = JA fire+up combo (OR keyboard F1); Fast = JA fire+left combo (OR keyboard F2).
-- `btnU`/`btnL`/`btnR`/`btnD` declared but unused/reserved (per machine `README.md` IO table).
+- Coin = JA fire+up combo, OR keyboard F1, OR `btnU`; Fast = JA fire+left combo, OR keyboard F2,
+  OR `btnL` — the root `PORTING_SPEC.md`'s generic default IO mapping (coin-in = `btnU`, 1P
+  start = `btnL`) applies since the core has real `coin1`/`fast1` inputs for them to drive.
+- `btnD`/`btnR` declared but unconnected (reserved): the core ties `coin2`/`fast2` (and all P2
+  inputs) to `'0'` with no genuine second-coin or second-start facility (DE10-lite header:
+  "Cocktail mode : NO"), so the generic default's carve-out ("second coin-in: only if the core
+  has 2 coin inputs") means there is nothing for them to drive.
 
 ## 7. LEDs
 
-- `led(15:0)` present (per machine `README.md` IO table) — unlike Bagman/Berzerk/Pooyan/
-  Time-Pilot, this port does wire LEDs; exact source signal to be confirmed against the core
-  when the top level is authored.
+- No `led` port: the pristine top's `ledr` assignment is dead code (commented out, references
+  an undefined signal, never actually driven) — confirmed by reading `solarfox_de10_lite.vhd`.
+  Matches Bagman/Berzerk/Pooyan/Time-Pilot/Burnin-Rubber/Zaxxon's convention of leaving `led`
+  unconstrained when the core doesn't drive it. (The machine `README.md`'s earlier claim of
+  `led(15:0)` present was stale/inaccurate and has been corrected.)
 
 ## 8. Shared conventions & hard rules
 
@@ -59,9 +61,3 @@
 - **Roms and generated PROM VHDL are copyrighted content** — never commit or distribute them.
 - Note: the color PROM `82s123.12d` is shared with Kick's romset (per machine `README.md`
   §"ROM set required").
-
-## 9. Open items
-
-- `.xdc`/`.xpr` (contrib/basys3/vivado/), `make_clk_wiz_0.sh`, the top-level wrapper
-  (`make_de10_lite_to_basys3_patch.sh`), and the synth/bitstream driver script all remain to be
-  authored before `make create_prj`/`clk_wiz`/`patch`/`synth`/`bitstream` can run.

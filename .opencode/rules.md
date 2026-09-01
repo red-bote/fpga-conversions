@@ -49,6 +49,15 @@
 - The root `PORTING_SPEC.md` is the generic bring-up procedure; each
   `<Machine>-by-Dar/.../PORTING_SPEC.md` is that machine's design-intent spec.
 
+## Vivado execution
+
+- Do not run `make synth`, `make bitstream`, or the underlying
+  `make_*_basys3_bitstream.sh` scripts (or invoke `vivado` directly for
+  synthesis/implementation) unless the user very explicitly asks for a
+  synthesis or bitstream build in that message. Scripted steps that only
+  stage sources (`setup`, `create_prj`, `clk_wiz`, `patch`) are not covered
+  by this rule.
+
 ## Documentation scope (machine README.md)
 
 - Each `<Machine>-by-Dar/README.md` is the single source of truth for that

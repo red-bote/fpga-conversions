@@ -36,6 +36,13 @@ is PS/2-keyboard only. See
 `Phoenix-by-Dar/contrib/basys3/PORTING_SPEC.md` for the full design
 record.
 
+Xevious-by-Dar is fully scripted and documented (assets authored end to end
+from the Galaga/Phoenix reference; same imported `mist/scandoubler.v`
+core-family wiring with `xevious_expose_hsync_vsync.patch`, which is
+apply-verified on the pristine CRLF tree). It has not yet been synthesized or
+hardware-verified: `make setup create_prj clk_wiz patch` are the next
+exercisable steps before `make synth` / `make bitstream`.
+
 Every machine directory now carries a scripted setup: `contrib/tools/setup_<game>.sh`
 (fetches the Dar archive into a gitignored `dloads/` cache with an embedded
 SHA-256 check, extracts it, applies any synthesis-fix patches) chaining into
@@ -61,6 +68,7 @@ SHA-256 check, extracts it, applies any synthesis-fix patches) chaining into
 | Solar Fox (Bally Midway 1981) | 40 MHz | `basys3/solar_fox_basys3.xpr`, `solar_fox_basys3` | — | `solarfox.zip` |
 | Time Pilot (Konami 1982) | 12.288 + 14.318 MHz | `basys3/time_pilot_basys3.xpr`, `time_pilot_basys3` | — | `timeplt.zip` |
 | Tron (Midway MCR 1982) | 40 MHz | `basys3/tron_basys3.xpr`, `tron_basys3` | — | `tron.zip` + `kick.zip` (color PROM) |
+| Xevious (Namco 1982) | 18 + 11 MHz | `basys3/xevious_basys3.xpr`, `xevious_basys3` | `xevious_expose_hsync_vsync.patch` | `xevious.zip` |
 
 Directory naming is not uniform: `Bagman-FPGA-Dar` and `Berzerk-FPGA-by-Dar`
 differ from the `-by-Dar` convention; `Sky-skipper-by-Dar` uses a lowercase `s`.
@@ -119,10 +127,10 @@ port map): PS/2 keyboard on JB, JA joystick (active-low, switch to GND)
 OR-merged with it, mono (or left-channel) PWM audio on PmodAMP2 at JC, 4-4-4 RGB
 VGA, and `btnC` = reset (active-high). `sw14` = sound enable, `sw15` = AMP gain.
 Video is 31 kHz progressive VGA; scan doubling is either built into the core or
-added via an imported scandoubler. Per machine: Galaga, Burnin' Rubber, and
-Phoenix import `mist/scandoubler.v` (their cores output 15 kHz only; Phoenix's
-core needed a patch to expose hsync/vsync in the first place, unlike
-Galaga/Burnin-Rubber's native ones — see
+added via an imported scandoubler. Per machine: Galaga, Burnin' Rubber,
+Phoenix, and Xevious import `mist/scandoubler.v` (their cores output 15 kHz
+only; Phoenix's and Xevious's cores needed a patch to expose hsync/vsync in
+the first place, unlike Galaga/Burnin-Rubber's native ones — see
 `Phoenix-by-Dar/contrib/basys3/PORTING_SPEC.md`); Time Pilot and Pooyan
 import `vga_scandoubler.v` (DECA); Bagman and Berzerk instantiate Dar's
 `line_doubler` inside the core; Kick, Popeye, Sky Skipper and Solar Fox generate

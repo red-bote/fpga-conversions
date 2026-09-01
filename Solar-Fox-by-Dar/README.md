@@ -20,7 +20,9 @@ notes.
   from the left channel. **F5** toggles separate (stereo) audio mode, **F7**
   toggles service mode.
 - **Controls**: PS/2 keyboard + JA joystick (OR-merged, verified working),
-  btnC = reset.
+  btnC = reset, btnU = coin-in, btnL = 1P start/fast (root `PORTING_SPEC.md`'s
+  generic default IO mapping; `btnD`/`btnR` are reserved/unused — the core has
+  no second-coin or second-start facility).
 
 | Input | Keyboard |
 |-------|----------|
@@ -33,7 +35,7 @@ notes.
 
 JA joystick (active-low, switch to GND):
 - JA1 = Right, JA2 = Left, JA3 = Down, JA4 = Up, JA7 = Fire
-- Coin = Fire + Up together; Fast = Fire + Left together
+- Coin = Fire + Up together, or btnU; Fast = Fire + Left together, or btnL
 
 ## IO mapping
 
@@ -41,14 +43,16 @@ JA joystick (active-low, switch to GND):
 |------------------|--------------|----------|
 | clk (W5, 100 MHz) | `clk` | clock into `clk_wiz_0` MMCM |
 | btnC | `btnC` | reset (active-high) |
-| btnU/btnL/btnR/btnD | `btnU/L/R/D` | declared, unused (reserved) |
+| btnU | `btnU` | coin-in (coin1), OR-merged with keyboard F1 / JA fire+up |
+| btnL | `btnL` | start/fast (fast1), OR-merged with keyboard F2 / JA fire+left |
+| btnD / btnR | `btnD` / `btnR` | declared, unused (reserved — core has no 2nd coin/start) |
 | sw(15) | `O_PMODAMP2_GAIN` | AMP gain: 0 = 12 dB, 1 = 6 dB |
 | sw(14) | `O_PMODAMP2_SHUTD` | AMP shutdown: 0 = off, 1 = on |
 | JB1 / JB3 | `ps2_dat` / `ps2_clk` | PS/2 keyboard |
 | JA1-JA4, JA7 | `JA(0..4)` | joystick (active-low) |
 | JC (PmodAMP2) | `O_PMODAMP2_AIN` | PWM audio (left channel; JC1=AIN, JC2=GAIN, JC4=SHUTD) |
-| VGA | `vgaRed/vgaGreen/vgaBlue(3:0)`, `vgaHsync`, `vgaVsync` | 4-4-4 RGB, 31 kHz |
-| LEDs | `led(15:0)` | present |
+| VGA | `vga_r/vga_g/vga_b(3:0)`, `vga_hs`, `vga_vs` | 4-4-4 RGB, 31 kHz |
+| LEDs | — | no `led` port (core never drives `ledr`) |
 
 ## Scripted setup
 

@@ -14,10 +14,10 @@ FPGA ports of Dar's arcade hardware (`darfpga@aol.fr`) to the Digilent Basys 3
 (Artix-7 `xc7a35tcpg236-1`), built with Vivado 2020.2. Each machine is an
 independent project under its own `<Machine>-by-Dar/` directory.
 
-Most `<Machine>-by-Dar/` directories are **not** ports — they contain only the
-extracted Dar source archive (`vhdl_<machine>_rev_.../`). A directory is an
-actual Basys 3 port iff it has `contrib/`, a `Makefile`, and a `README.md`
-(currently ~11 of ~30). Don't assume a machine dir is buildable.
+A directory is an actual Basys 3 port if it has `contrib/`, a `Makefile`, and
+a `README.md`. Currently 15 of 25 machine dirs are ports; the rest contain only
+the extracted Dar source archive (`vhdl_<machine>_rev_.../`). Don't assume a
+machine dir is buildable — check for those three markers first.
 
 New ports start from the generic templates in `wip/machine/`: the project
 `wip/machine/contrib/basys3/basys3-project-template/` (project + `basys3-top.vhd`),
@@ -60,6 +60,15 @@ Steps must run in order. From the machine directory:
 
 Root-level shorthand: `make all-galaga`, `make bitstream-pooyan`, etc.
 
+**Root Makefile covers only 9 of the 15 ports** (Galaga, Pooyan, Time Pilot,
+Bagman, Berzerk, Tron, Kick, BurgerTime, Defender). Burnin-Rubber, Popeye,
+Phoenix, Sky-skipper, Solar-Fox, and Xevious each have a machine-level
+`Makefile` but no root delegation — build those with `make <step>` from inside
+the machine directory. Root step names are hyphenated
+(`create-prj-galaga`, `clk-wiz-galaga`); per-machine Makefile targets use
+underscores (`create_prj`, `clk_wiz`). Run `make help` for the current step
+matrix.
+
 ## Tool / path resolution
 
 `ENV_VAR → project default → interactive prompt`:
@@ -69,10 +78,13 @@ Root-level shorthand: `make all-galaga`, `make bitstream-pooyan`, etc.
 **Vivado builds run from `/tmp`** so `vivado.log`/`vivado.jou` stay outside the
 repo.
 
+`contrib/basys3/vga_scandoubler.v` is the canonical cleanroom import — **never
+modify it**.
+
 ## Copyright hard rule
 
-Roms and generated PROM VHDL are copyrighted MAME-derived content — **never
-commit or distribute** them. `.patch` files are the tracked record of changes to
+Roms and generated PROM VHDL are copyrighted content — **never commit or
+distribute** them. `.patch` files are the tracked record of changes to
 pristine Dar sources.
 
 ## VHDL formatting
@@ -83,10 +95,9 @@ Idempotent. `--check` for CI, `--align` for column alignment.
 ## Common gotchas
 
 - Directory naming is not uniform: `Bagman-FPGA-Dar` and `Berzerk-FPGA-by-Dar`
-  differ from the `-by-Dar` convention.
+  differ from the `-by-Dar` convention; `Sky-skipper-by-Dar` uses a lowercase `s`.
 - Machines needing two romsets (Galaga, Popeye) require the extra set for
-  CPU/speech ROMs absent from the plain set.
-- Galaga and Burnin' Rubber import `mist/scandoubler.v` (15 kHz core output);
-  Time Pilot and Pooyan import `vga_scandoubler.v` (DECA).
-- The shipped `make_<game>_proms.bat` files have CRLF endings; `prep_roms.sh`
-  converts them to LF via sed before execution.
+  CPU/speech ROMs absent from the plain set (resolved via `ROMZIP2`).
+- Some ports are scripted but not yet through `make synth`/`make bitstream`
+  (e.g. Defender, Phoenix previously, Xevious); the root `README.md` Status
+  section is the current record of each machine's verified state.

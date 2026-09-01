@@ -9,7 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `.opencode/rules.md` — terminology, git usage rules, filesystem scope, documentation-scope rules. These are binding operational rules, not suggestions.
 - Root `README.md` — machine index (clock frequencies, project/top-entity names, patches, romsets) and the Common Basys 3 platform section (IO conventions, scandoubler variants per machine).
 - Each `<Machine>-by-Dar/README.md` — single source of truth for that machine's design and build.
-- Each machine's `PORTING_SPEC.md` and the generic root `PORTING_SPEC.md` — porting-decision record; consult before deviating from the reference port. Location is mid-migration: canonical target is `<Machine>-by-Dar/contrib/basys3/PORTING_SPEC.md` (already there for Berzerk-FPGA-by-Dar, Burnin-Rubber-by-Dar, Tron-by-Dar, Bagman-FPGA-Dar, Kick-Midway-MCR-by-Dar, Popeye-by-Dar, Sky-skipper-by-Dar, Solar-Fox-by-Dar, Burger-Time-by-Dar, Defender-by-Dar); Galaga-Midway-by-Dar, Pooyan-by-Dar, and Time-Pilot-by-Dar still have it at the machine-directory top level pending migration. Check both locations.
+- Each machine's `PORTING_SPEC.md` and the generic root `PORTING_SPEC.md` — porting-decision record; consult before deviating from the reference port. Location is mid-migration: canonical target is `<Machine>-by-Dar/contrib/basys3/PORTING_SPEC.md` (already there for Berzerk-FPGA-by-Dar, Burnin-Rubber-by-Dar, Tron-by-Dar, Bagman-FPGA-Dar, Kick-Midway-MCR-by-Dar, Popeye-by-Dar, Sky-skipper-by-Dar, Solar-Fox-by-Dar, Burger-Time-by-Dar, Defender-by-Dar, Phoenix-by-Dar, Xevious-by-Dar); Galaga-Midway-by-Dar, Pooyan-by-Dar, and Time-Pilot-by-Dar still have it at the machine-directory top level pending migration. Check both locations.
 
 Do not restate content from `AGENTS.md` / `.opencode/rules.md` / `README.md` elsewhere in this repo (per `.opencode/rules.md` §Documentation scope) — script design lives in the scripts themselves, terminology/git/filesystem rules live in `.opencode/rules.md`, and platform IO conventions live in the root `README.md`.
 
@@ -17,7 +17,7 @@ Do not restate content from `AGENTS.md` / `.opencode/rules.md` / `README.md` els
 
 Build workflow (per-machine step sequence and semantics): see `AGENTS.md` §"Build workflow". From the repo root, the delegating shorthand `make <step>-<machine>` hyphenates multi-word step names (`create-prj-galaga`, `clk-wiz-galaga`) even though the per-machine Makefile targets use underscores (`create_prj`, `clk_wiz`); run `make help` for the current step matrix.
 
-**Root Makefile coverage gap**: only 9 of the 13 ported machines have root-level delegation targets (Galaga, Pooyan, Time-Pilot, Bagman, Berzerk, Tron, Kick, Burger-Time, Defender). Burnin-Rubber-by-Dar, Popeye-by-Dar, Sky-skipper-by-Dar, and Solar-Fox-by-Dar each have their own machine-level `Makefile` but no root shorthand — build these via `make <step>` from inside the machine directory.
+**Root Makefile coverage gap**: only 9 of the 15 ported machines have root-level delegation targets (Galaga, Pooyan, Time-Pilot, Bagman, Berzerk, Tron, Kick, Burger-Time, Defender). Burnin-Rubber-by-Dar, Popeye-by-Dar, Phoenix-by-Dar, Sky-skipper-by-Dar, Solar-Fox-by-Dar, and Xevious-by-Dar each have their own machine-level `Makefile` but no root shorthand — build these via `make <step>` from inside the machine directory.
 
 VHDL formatting: `tools/vhdl_formatter.py` (see `AGENTS.md` §"VHDL formatting" for flags).
 
