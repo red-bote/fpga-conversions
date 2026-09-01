@@ -1,0 +1,28 @@
+diff --git a/vhdl_zaxxon_rev_0_0_2019_11_29/rtl_dar/zaxxon.vhd b/vhdl_zaxxon_rev_0_0_2019_11_29/rtl_dar/zaxxon.vhd
+--- a/vhdl_zaxxon_rev_0_0_2019_11_29/rtl_dar/zaxxon.vhd
++++ b/vhdl_zaxxon_rev_0_0_2019_11_29/rtl_dar/zaxxon.vhd
+@@ -125,6 +125,7 @@
+  video_blankn   : out std_logic;
+  video_hs       : out std_logic;
+  video_vs       : out std_logic;
++ pix_clk_div    : out std_logic_vector(1 downto 0);
+  
+  audio_out_l    : out std_logic_vector(15 downto 0);
+  audio_out_r    : out std_logic_vector(15 downto 0);
+@@ -434,6 +435,16 @@
+ 	end if;
+ end process;
+ 
++-- expose real hsync/vsync/pixel-clock-divider bits for an external
++-- scandoubler (composite-sync-only pristine design; hsync0 is a valid
++-- per-line pulse already, vsync is new simple logic independent of the
++-- vs_cnt equalizing-pulse scheme used for video_csync; clock_cnt(1:0)
++-- are the same bits pix_ena is built from -- clean 12/6 MHz square
++-- waves, exposed directly rather than re-derived downstream)
++video_hs <= hsync0;
++video_vs <= '0' when vcnt < 8 else '1';
++pix_clk_div <= clock_cnt(1 downto 0);
++
+ ---------------------------------
+ -- players/dip switches inputs --
+ ---------------------------------
