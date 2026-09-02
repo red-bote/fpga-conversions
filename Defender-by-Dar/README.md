@@ -102,8 +102,6 @@ machine ROMs are copyrighted — never commit or redistribute them.
 
 ## Build status
 
-The port is fully scripted (`make setup create_prj clk_wiz patch`; `make
-synth` / `make bitstream` for a Vivado run). Port assets are authored end to
-end from the BurgerTime/Burnin-Rubber reference (same scandoubler core-family
-wiring), with Defender-specific clock/input/audio handling. Hardware bring-up
-(Vivado synthesis/bitstream) has not yet been run.
+The port is fully scripted (`make setup create_prj clk_wiz patch synth
+bitstream`). Hardware bring-up is complete: a bitstream has been built and
+the port runs correctly on the Basys 3 board.

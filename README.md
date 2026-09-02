@@ -12,13 +12,9 @@ source of truth for that machine's design and build.
 ## Status
 
 Time-Pilot-by-Dar, Pooyan-by-Dar, Bagman-FPGA-Dar, Berzerk-FPGA-by-Dar, Burnin-Rubber-by-Dar, 
-Galaga-Midway-by-Dar, Tron-by-Dar, Kick-Midway-MCR-by-Dar, Burger-Time-by-Dar 
-and Popeye-by-Dar are complete, fully-scripted, hardware-verified ports.
-
-Defender-by-Dar is fully scripted (assets authored end to end from the
-BurgerTime/Burnin-Rubber reference, same scandoubler core-family wiring) but
-not yet hardware-verified: `make setup create_prj clk_wiz patch` are
-exercisable; `make synth` / `make bitstream` have not been run.
+Galaga-Midway-by-Dar, Tron-by-Dar, Kick-Midway-MCR-by-Dar, Burger-Time-by-Dar,
+Popeye-by-Dar, Defender-by-Dar, Solar-Fox-by-Dar and Zaxxon-by-Dar are complete,
+fully-scripted, hardware-verified ports.
 
 Phoenix-by-Dar is fully scripted, synthesized, and bitstream-built
 (0 critical warnings/errors through implementation). Hardware bring-up has
@@ -69,6 +65,7 @@ SHA-256 check, extracts it, applies any synthesis-fix patches) chaining into
 | Time Pilot (Konami 1982) | 12.288 + 14.318 MHz | `basys3/time_pilot_basys3.xpr`, `time_pilot_basys3` | — | `timeplt.zip` |
 | Tron (Midway MCR 1982) | 40 MHz | `basys3/tron_basys3.xpr`, `tron_basys3` | — | `tron.zip` + `kick.zip` (color PROM) |
 | Xevious (Namco 1982) | 18 + 11 MHz | `basys3/xevious_basys3.xpr`, `xevious_basys3` | `xevious_expose_hsync_vsync.patch` | `xevious.zip` |
+| Zaxxon (Gremlin/Sega 1980) | 24 MHz | `basys3/zaxxon_basys3.xpr`, `zaxxon_basys3` | `zaxxon_hflip_xor_width.patch`, `zaxxon_expose_video_timing.patch` | `zaxxon.zip` |
 
 Directory naming is not uniform: `Bagman-FPGA-Dar` and `Berzerk-FPGA-by-Dar`
 differ from the `-by-Dar` convention; `Sky-skipper-by-Dar` uses a lowercase `s`.
@@ -128,10 +125,10 @@ OR-merged with it, mono (or left-channel) PWM audio on PmodAMP2 at JC, 4-4-4 RGB
 VGA, and `btnC` = reset (active-high). `sw14` = sound enable, `sw15` = AMP gain.
 Video is 31 kHz progressive VGA; scan doubling is either built into the core or
 added via an imported scandoubler. Per machine: Galaga, Burnin' Rubber,
-Phoenix, and Xevious import `mist/scandoubler.v` (their cores output 15 kHz
-only; Phoenix's and Xevious's cores needed a patch to expose hsync/vsync in
-the first place, unlike Galaga/Burnin-Rubber's native ones — see
-`Phoenix-by-Dar/contrib/basys3/PORTING_SPEC.md`); Time Pilot and Pooyan
+Phoenix, Xevious, and Zaxxon import `mist/scandoubler.v` (their cores output
+15 kHz only; Phoenix's, Xevious's, and Zaxxon's cores needed a patch to
+expose hsync/vsync in the first place, unlike Galaga/Burnin-Rubber's native
+ones — see `Phoenix-by-Dar/contrib/basys3/PORTING_SPEC.md`); Time Pilot and Pooyan
 import `vga_scandoubler.v` (DECA); Bagman and Berzerk instantiate Dar's
 `line_doubler` inside the core; Kick, Popeye, Sky Skipper and Solar Fox generate
 progressive 31 kHz natively in the core (`tv15Khz_mode = '0'`).

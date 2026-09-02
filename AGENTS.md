@@ -15,13 +15,13 @@ FPGA ports of Dar's arcade hardware (`darfpga@aol.fr`) to the Digilent Basys 3
 independent project under its own `<Machine>-by-Dar/` directory.
 
 A directory is an actual Basys 3 port if it has `contrib/`, a `Makefile`, and
-a `README.md`. Currently 15 of 25 machine dirs are ports; the rest contain only
+a `README.md`. Currently 16 of 25 machine dirs are ports; the rest contain only
 the extracted Dar source archive (`vhdl_<machine>_rev_.../`). Don't assume a
 machine dir is buildable — check for those three markers first.
 
 New ports start from the generic templates in `wip/machine/`: the project
-`wip/machine/contrib/basys3/basys3-project-template/` (project + `basys3-top.vhd`),
-its in-project constraints `basys3-project-template.srcs/constrs_1/imports/
+`wip/machine/contrib/basys3/basys3-project-template.xpr`, its in-project
+constraints `basys3-project-template.srcs/constrs_1/imports/
 digilent-xdc-master/Basys-3-Master.xdc`, the per-machine Makefile
 `wip/machine/Makefile.template`, and the tokenized build-script templates
 under `wip/machine/contrib/` (`tools/`, `basys3/tools/`, `basys3/vivado/`).
@@ -60,7 +60,7 @@ Steps must run in order. From the machine directory:
 
 Root-level shorthand: `make all-galaga`, `make bitstream-pooyan`, etc.
 
-**Root Makefile covers only 9 of the 15 ports** (Galaga, Pooyan, Time Pilot,
+**Root Makefile covers only 9 of the 16 ports** (Galaga, Pooyan, Time Pilot,
 Bagman, Berzerk, Tron, Kick, BurgerTime, Defender). Burnin-Rubber, Popeye,
 Phoenix, Sky-skipper, Solar-Fox, and Xevious each have a machine-level
 `Makefile` but no root delegation — build those with `make <step>` from inside
@@ -96,8 +96,8 @@ Idempotent. `--check` for CI, `--align` for column alignment.
 
 - Directory naming is not uniform: `Bagman-FPGA-Dar` and `Berzerk-FPGA-by-Dar`
   differ from the `-by-Dar` convention; `Sky-skipper-by-Dar` uses a lowercase `s`.
-- Machines needing two romsets (Galaga, Popeye) require the extra set for
-  CPU/speech ROMs absent from the plain set (resolved via `ROMZIP2`).
+- Machines needing two romsets (Tron, Galaga, Popeye) require the extra set for
+  color PROMs, CPU/speech ROMs absent from the plain set (resolved via `ROMZIP2`).
 - Some ports are scripted but not yet through `make synth`/`make bitstream`
-  (e.g. Defender, Phoenix previously, Xevious); the root `README.md` Status
+  (e.g. Xevious); the root `README.md` Status
   section is the current record of each machine's verified state.
