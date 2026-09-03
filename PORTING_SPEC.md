@@ -74,13 +74,49 @@ The default external-IO mapping below is used unless a specific source port forc
 | 1P start | `btnL` | |
 | 2P start | `btnR` | |
 | joystick left/right/up/down/fire | PMODA `JA[0..4]` (JA1–4, JA7) | active-low, switch to GND; OR-merged with the keyboard |
-| PS/2 keyboard | JB1/JB3 `ps2_dat`/`ps2_clk` (A14/B15) | take all keys defined in the DE10-lite top source being ported |
+| PS/2 keyboard | JB1/JB3 `ps2_dat`/`ps2_clk` (A14/B15), **or** onboard USB HID `ps2_dat`/`ps2_clk` (B17/C17) | take all keys defined in the DE10-lite top source being ported; see keyboard-clock note below |
 | dipswitches | `sw` bits | map all dipswitches from the DE10-lite top |
 | audio PWM | `O_PMODAMP2_AIN/GAIN/SHUTD` (JC) | sound-enable + gain on the switches |
 | VGA | `vgaRed/vgaGreen/vgaBlue(3:0)`, `Hsync`, `Vsync` | 4-4-4 RGB; see TV note below |
 
-- **PS/2** uses the JB1/JB3 header (A14/B15 `ps2_dat`/`ps2_clk`), not the template's
-  USB-HID block.
+- **PS/2 keyboard, two IO options — pick per port, both wire to the same
+  `io_ps2_keyboard.vhd`/`kbd_joystick.vhd` unchanged**:
+  - **JB1/JB3 Pmod** (A14/B15 `ps2_dat`/`ps2_clk`) — an external PS/2
+    breakout wired to the Pmod header. The project's default until
+    2026-09-03; still valid, still used by most existing ports.
+  - **Onboard USB HID host** (the template's `##USB HID (PS/2)` XDC block,
+    B17/C17 `ps2_dat`/`ps2_clk`) — the Basys 3 has an onboard PIC24-based
+    USB-A host port that translates a plugged-in USB keyboard into the
+    *same* PS/2 protocol/pins a direct device would use. No VHDL logic
+    change either way — this is purely an XDC pin choice (comment out the
+    JB1/JB3 lines, uncomment the `##USB HID (PS/2)` lines, retarget their
+    placeholder `PS2Clk`/`PS2Data` port names to the port's actual
+    `ps2_clk`/`ps2_dat`).
+  - **Keyboard-clock rate matters and differs between the two options —
+    this is the one gotcha that isn't a simple pin swap.** The clock fed to
+    `io_ps2_keyboard`'s `clk` port (usually a divided-down `clock_24` or
+    similar, reused verbatim from the DE10-lite top in most pristine
+    sources) is commonly ~4 MHz by whatever divider ratio the source
+    happens to use. **4 MHz works fine for a real PS/2 device on JB1/JB3,
+    but has been found non-functional for the onboard USB HID host port** —
+    confirmed on real hardware (`vhdl_congo_bongo/contrib/basys3/PORTING_SPEC.md`
+    §5 has the full root-cause writeup: it built and flashed cleanly, only
+    the keyboard didn't respond, everything else on the board worked fine).
+    **6 MHz is the confirmed-working rate** for the onboard USB HID port —
+    independently confirmed by two other ports in this repository
+    (`Arcade_Zaxxon` and `Pooyan-by-Dar`) that either hit and fixed this
+    exact symptom or already used 6 MHz for unrelated reasons. When porting
+    a new machine for the onboard USB HID port (or moving an existing one
+    to it), check/set the keyboard-clock divider to give **at least 6 MHz**,
+    not whatever ratio the pristine source happens to use verbatim.
+  - **Don't just retarget the pristine divider's threshold if it's shared
+    with anything else.** Some pristine tops reuse the same divider/counter
+    for the keyboard clock *and* another gated signal (e.g. a PWM audio
+    accumulator update, as in Congo Bongo) — changing that counter's period
+    to hit 6 MHz would also change the other signal's rate as an untested
+    side effect. Add a second, independent counter dedicated to the
+    keyboard clock instead, and leave the original counter (and whatever
+    else it gates) untouched.
 - **TV display**: VGA is always supported. Additionally keep 15 kHz TV display support
   (native RGB + composite sync on HS) if the source port provides it.
 - **LEDs / 7-segment display**: if the port source actively drives LEDs or a 7-segment
@@ -97,7 +133,9 @@ pristine core, using an existing full port's top level as the worked example.
    `hex0-3`, `gpio`) with the Basys 3 set (`clk` 100 MHz, `sw(15:0)`, `btnC`, `ps2_dat/ps2_clk`,
    `O_PMODAMP2_AIN/GAIN/SHUTD`, `JA(4:0)`, 4-4-4 RGB + `vga_hs/vs`).
 2. **Clocking** — replace the DE10 PLL (`max10_pll_*`) with `clk_wiz_0` (MMCM, 100 MHz in →
-   core + sound clocks); keep the internal clock divider that feeds the PS/2 path.
+   core + sound clocks); the internal clock divider feeding the PS/2 path can be kept
+   verbatim only if targeting JB1/JB3 — for the onboard USB HID host port, check its
+   rate against the ≥6 MHz requirement in §3's keyboard-clock note first.
 3. **Reset polarity** — DE10 uses an active-low key; Basys 3 uses active-high `btnC`.
 4. **Core instantiation** — keep the core port map unchanged; wire `video_hs`/`video_vs` (often
    left `open` on the DE10) to feed the scandoubler.

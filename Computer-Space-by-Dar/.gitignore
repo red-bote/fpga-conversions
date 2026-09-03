@@ -1,0 +1,4 @@
+# Generated sound ROM replacements: parsed from the Dar .hex files at
+# `make setup`; they embed copyrighted waveform data and must never be
+# committed (see the repo copyright rule).
+vhdl_computer_space_rev_1_1_2017_11_22/basys3/generated_sound_roms/

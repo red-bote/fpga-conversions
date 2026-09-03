@@ -1,0 +1,37 @@
+diff --git a/vhdl_computer_space_rev_1_1_2017_11_22/rtl/motion_board.vhd b/vhdl_computer_space_rev_1_1_2017_11_22/rtl/motion_board.vhd
+--- a/vhdl_computer_space_rev_1_1_2017_11_22/rtl/motion_board.vhd
++++ b/vhdl_computer_space_rev_1_1_2017_11_22/rtl/motion_board.vhd
+@@ -289,6 +289,7 @@
+ signal d1_1_old, d1_6_old  						: std_logic;
+ 
+ signal rocket_missile_freq, saucer_missile_freq : std_logic;
++signal missile_motion_q, saucer_missile_q : unsigned (15 downto 0);
+ 	
+ component v74161_16bit 
+ 	port(
+@@ -467,9 +468,11 @@
+ 			D(1)  => b5_4,  -- Right (0) or Left (1) 
+ 			D(0)  => b5_3,  -- Horizontal movement (0) or not (1) 
+ 			rco 	=> e5_15,
+-			Q(11) => rocket_missile_freq
++			Q => missile_motion_q
+ 			);
+ 
++rocket_missile_freq <= missile_motion_q (11);
++
+ d5_3 <= MB_19;			-- MB_19 sets the vertical speed
+ 							-- constant 1 - no speed
+ 							-- constant 0 - speed of 60 pixels/second
+@@ -1446,9 +1449,11 @@
+ 			D(1)  => b2_4,  -- Right (0) or Left (1)  
+ 			D(0)  => b2_3,  -- Horizontal movement (0) or not (1)  
+ 			rco => e2_15,
+-			Q(9) => saucer_missile_freq
++			Q => saucer_missile_q
+ 			);
+ 
++saucer_missile_freq <= saucer_missile_q (9);
++
+ b2_4 <= b1_1;			-- Right (0) or Left (1) 
+ 
+ b2_3 <= a1_16;			-- Horizontal movement (0) or not (1)
