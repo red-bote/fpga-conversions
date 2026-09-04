@@ -1,0 +1,21 @@
+--- a/vhdl_traverse_usa_rev_0_0_2019_03_16/rtl_dar/traverse_usa.vhd
++++ b/vhdl_traverse_usa_rev_0_0_2019_03_16/rtl_dar/traverse_usa.vhd
+@@ -711,13 +711,11 @@
+ 
+ 	-- external sync and blank outputs
+ 	video_blankn <= not (hblank or vblank);
+---
+---  video_hs <= hsync0;
+---  
+---  if    vsync_cnt = 0 then video_vs <= '0';
+---  elsif vsync_cnt = 8 then video_vs <= '1';
+---  end if;
+---
++	video_hs <= hsync0;
++	if    vsync_cnt = 0 then video_vs <= '0';
++	elsif vsync_cnt = 8 then video_vs <= '1';
++	end if;
++	
+ end if;
+ end process;
+ 

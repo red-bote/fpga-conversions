@@ -21,6 +21,7 @@ TRON        := Tron-by-Dar
 KICK        := Kick-Midway-MCR-by-Dar
 BURGER_TIME := Burger-Time-by-Dar
 DEFENDER    := Defender-by-Dar
+TRAVERSE_USA := Traverse-USA-by-Dar
 
 # Bare `make` prints help instead of running a build.
 .DEFAULT_GOAL := help
@@ -136,7 +137,10 @@ clean-bagman:
         setup-tron create-prj-tron clk-wiz-tron patch-tron \
         synth-tron bitstream-tron all-tron clean-tron \
         setup-kick create-prj-kick clk-wiz-kick patch-kick \
-        synth-kick bitstream-kick all-kick clean-kick
+        synth-kick bitstream-kick all-kick clean-kick \
+        setup-traverse-usa create-prj-traverse-usa clk-wiz-traverse-usa \
+        patch-traverse-usa synth-traverse-usa bitstream-traverse-usa \
+        all-traverse-usa clean-traverse-usa
 
 # ---- Berzerk ----
 setup-berzerk:
@@ -263,6 +267,31 @@ all-defender:
 clean-defender:
 	$(MAKE) -C "$(DEFENDER)" clean
 
+# ---- Traverse-USA ----
+setup-traverse-usa:
+	$(MAKE) -C "$(TRAVERSE_USA)" setup
+
+create-prj-traverse-usa:
+	$(MAKE) -C "$(TRAVERSE_USA)" create_prj
+
+clk-wiz-traverse-usa:
+	$(MAKE) -C "$(TRAVERSE_USA)" clk_wiz
+
+patch-traverse-usa:
+	$(MAKE) -C "$(TRAVERSE_USA)" patch
+
+synth-traverse-usa:
+	$(MAKE) -C "$(TRAVERSE_USA)" synth
+
+bitstream-traverse-usa:
+	$(MAKE) -C "$(TRAVERSE_USA)" bitstream
+
+all-traverse-usa:
+	$(MAKE) -C "$(TRAVERSE_USA)" all
+
+clean-traverse-usa:
+	$(MAKE) -C "$(TRAVERSE_USA)" clean
+
 help:
 	@echo "Top-level port driver. Each step delegates to the machine's own Makefile."
 	@echo "Usage: make <step>-<machine>"
@@ -277,6 +306,7 @@ help:
 	@echo "  Kick        : setup create-prj clk-wiz patch synth bitstream all clean"
 	@echo "  BurgerTime  : setup create-prj clk-wiz patch synth bitstream all clean"
 	@echo "  Defender    : setup create-prj clk-wiz patch synth bitstream all clean"
+	@echo "  Traverse-USA: setup create-prj clk-wiz patch synth bitstream all clean"
 	@echo
 	@echo "Examples:"
 	@echo "  make setup-galaga      make synth-time-pilot      make bitstream-pooyan"

@@ -41,6 +41,20 @@ apply-verified on the pristine CRLF tree). It has not yet been synthesized or
 hardware-verified: `make setup create_prj clk_wiz patch` are the next
 exercisable steps before `make synth` / `make bitstream`.
 
+Traverse-USA-by-Dar is fully scripted and documented (assets authored end to
+end from the Galaga/Zaxxon/Computer-Space references; same imported
+`mist/scandoubler.v` wiring with `traverse_usa_expose_video_timing.patch` and
+the `traverse_usa_de10_lite_to_basys3.patch` wrapper rewrite, both
+apply-verified on the pristine CRLF tree). Unlike the DE10 original (keyboard
+only), the Basys3 port adds a JA joystick OR-merged with the keyboard and
+dedicated coin/start buttons; the core has no genuine fire input, so up and
+fire both accelerate (`traverse_usa.vhd:129`). It synthesizes cleanly and has
+been hardware-brought up on the Basys 3; the keyboard is **always on the
+onboard USB-HID connector (C17/B17), not JB**, driven at ~6.14 MHz (the
+pristine ~3 MHz keyboard clock is too slow for the onboard USB-HID host —
+same fix as Congo Bongo/Arcade_Zaxxon/Pooyan). See the machine
+`README.md` for the keyboard-connector/clock note.
+
 Every machine directory now carries a scripted setup: `contrib/tools/setup_<game>.sh`
 (fetches the Dar archive into a gitignored `dloads/` cache with an embedded
 SHA-256 check, extracts it, applies any synthesis-fix patches) chaining into
@@ -69,6 +83,7 @@ instead of `prep_roms.sh`.
 | Solar Fox (Bally Midway 1981) | 40 MHz | `basys3/solar_fox_basys3.xpr`, `solar_fox_basys3` | — | `solarfox.zip` |
 | Time Pilot (Konami 1982) | 12.288 + 14.318 MHz | `basys3/time_pilot_basys3.xpr`, `time_pilot_basys3` | — | `timeplt.zip` |
 | Tron (Midway MCR 1982) | 40 MHz | `basys3/tron_basys3.xpr`, `tron_basys3` | — | `tron.zip` + `kick.zip` (color PROM) |
+| Traverse USA / Zippy Race (Irem 1983) | 36.86 + 3.58 MHz | `basys3/traverse_usa_basys3.xpr`, `traverse_usa_basys3` | `traverse_usa_expose_video_timing.patch`, `traverse_usa_de10_lite_to_basys3.patch` | `travrusa.zip` |
 | Xevious (Namco 1982) | 18 + 11 MHz | `basys3/xevious_basys3.xpr`, `xevious_basys3` | `xevious_expose_hsync_vsync.patch` | `xevious.zip` |
 | Zaxxon (Gremlin/Sega 1980) | 24 MHz | `basys3/zaxxon_basys3.xpr`, `zaxxon_basys3` | `zaxxon_hflip_xor_width.patch`, `zaxxon_expose_video_timing.patch` | `zaxxon.zip` |
 | Computer Space (Nutting Associates 1971) | 6 + 50 MHz | `basys3/computer_space_basys3.xpr`, `computer_space_basys3` | `computer_space_de10_lite_to_basys3.patch`, `computer_space_motion_q_assoc.patch`, `computer_space_rocket_timer_synth_fix.patch` | — (discrete-game core, no romset) |
@@ -132,8 +147,10 @@ OR-merged with it, mono (or left-channel) PWM audio on PmodAMP2 at JC, 4-4-4 RGB
 VGA, and `btnC` = reset (active-high). `sw14` = sound enable, `sw15` = AMP gain.
 Video is 31 kHz progressive VGA; scan doubling is either built into the core or
 added via an imported scandoubler. Per machine: Galaga, Burnin' Rubber,
-Phoenix, Computer Space, Xevious, and Zaxxon import `mist/scandoubler.v`
-(their cores output 15 kHz only; Phoenix's, Xevious's, and Zaxxon's cores
+Phoenix, Computer Space, Xevious, Traverse-USA, and Zaxxon import
+`mist/scandoubler.v`
+(their cores output 15 kHz only; Phoenix's, Xevious's, Traverse-USA's, and
+Zaxxon's cores
 needed a patch to expose hsync/vsync in the first place, unlike
 Galaga/Burnin-Rubber's native ones — see
 `Phoenix-by-Dar/contrib/basys3/PORTING_SPEC.md`); Time Pilot and Pooyan
