@@ -1,6 +1,6 @@
-diff --git a/vhdl_computer_space_rev_1_1_2017_11_22/rtl/motion_board.vhd b/vhdl_computer_space_rev_1_1_2017_11_22/rtl/motion_board.vhd
---- a/vhdl_computer_space_rev_1_1_2017_11_22/rtl/motion_board.vhd
-+++ b/vhdl_computer_space_rev_1_1_2017_11_22/rtl/motion_board.vhd
+diff --git a/computer_space_basys3.srcs/sources_1/imports/rtl/motion_board.vhd b/computer_space_basys3.srcs/sources_1/imports/rtl/motion_board.vhd
+--- a/computer_space_basys3.srcs/sources_1/imports/rtl/motion_board.vhd
++++ b/computer_space_basys3.srcs/sources_1/imports/rtl/motion_board.vhd
 @@ -289,6 +289,7 @@
  signal d1_1_old, d1_6_old  						: std_logic;
  

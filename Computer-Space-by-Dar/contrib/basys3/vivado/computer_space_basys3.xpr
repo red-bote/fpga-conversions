@@ -192,8 +192,10 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../rtl/motion_board.vhd">
+      <File Path="$PSRCDIR/sources_1/imports/rtl/motion_board.vhd">
         <FileInfo>
+          <Attr Name="ImportPath" Val="$PPRDIR/../rtl/motion_board.vhd"/>
+          <Attr Name="ImportTime" Val="1788468599"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>

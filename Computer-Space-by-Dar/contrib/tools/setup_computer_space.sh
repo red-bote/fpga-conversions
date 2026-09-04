@@ -11,6 +11,12 @@
 #    Excludes *_de10_lite_to_basys3.patch: that file is a record of the
 #    top-level rewrite (authored by make_de10_lite_to_basys3_patch.sh, applied
 #    to a different target file), not a fix to apply to the pristine tree.
+#    Excludes computer_space_motion_q_assoc.patch and
+#    computer_space_rocket_timer_synth_fix.patch: the Vivado project imports
+#    its own copy of motion_board.vhd (sources_1/imports/rtl/motion_board.vhd,
+#    decoupled from the pristine rtl/ copy once imported), so these two
+#    patches are applied to that copy by create_project.sh instead -- the
+#    pristine rtl/motion_board.vhd is never modified.
 # 4. Verify the six sound-waveform .hex files exist in the extracted rtl/
 #    directory, then run gen_sound_roms.py to generate the six rom_*.vhd
 #    replacements into basys3/generated_sound_roms/ (gitignored).
@@ -70,6 +76,8 @@ for p in "$ROOT"/contrib/*/code/*.patch "$ROOT"/contrib/code/*.patch; do
     case "$p" in
         *_de10_lite_to_basys3.patch) continue ;;
         *scandoubler_fix.patch) continue ;; # applied later to the imported scandoubler
+        *computer_space_motion_q_assoc.patch) continue ;; # applied later to the imported motion_board.vhd
+        *computer_space_rocket_timer_synth_fix.patch) continue ;; # applied later to the imported motion_board.vhd
     esac
     # --binary: the extracted Dar rtl files are CRLF, so a plain `patch` run
     # (which strips trailing CRs from the patch) cannot match them. --binary
