@@ -18,7 +18,7 @@ define display_reminder
 	$(if $(DISPLAY_HINT),$(DISPLAY_REMINDER))
 endef
 
-.PHONY: all setup create_prj clk_wiz patch synth bitstream clean help
+.PHONY: all setup create_prj clk_wiz patch synth bitstream load clean help
 
 all: setup clk_wiz patch
 	$(display_reminder)
@@ -45,10 +45,17 @@ bitstream: synth
 	$(BASYS3_TOOLS)/make_<game>_basys3_bitstream.sh bitstream
 	$(display_reminder)
 
+# Program the bitstream into the Basys3 SRAM with openFPGALoader.
+# Volatile: the FPGA loses the configuration on power cycle - re-run `make load`.
+BIT := <src_dir>/basys3/<game>_basys3.runs/impl_1/<game>_basys3.bit
+
+load: bitstream
+	openFPGALoader -b basys3 $(BIT)
+
 clean:
 	rm -rf <src_dir>
 
 help:
 	@echo "<game> Basys 3 port. External IO used: $(IO_SUMMARY)"
-	@echo "Steps: setup create_prj clk_wiz patch synth bitstream all clean (default: all)"
+	@echo "Steps: setup create_prj clk_wiz patch synth bitstream load clean (default: all)"
 	$(display_reminder)

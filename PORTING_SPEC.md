@@ -45,7 +45,8 @@ Bring the machine up in this order, mirroring an existing full port's scripts fo
    port lines the port uses;
    add the core sources, scandoubler import, and clk_wiz_0 wrappers.
 8. **Makefile** — wire `all / setup / clk_wiz / clean` to the scripts; add `patch / synth /
-   bitstream` once their scripts exist.
+   bitstream / load` once their scripts exist. `load` programs the bitstream into the Basys3
+   SRAM via `openFPGALoader -b basys3 <bit>` (volatile; depends on `bitstream`).
 
 Steps 4–7 are templated under `wip/machine/contrib/` (`tools/`, `basys3/tools/`,
 `basys3/vivado/`); the build scripts derive from those templates by substituting

@@ -19,7 +19,7 @@ notes.
 ## Features supported
 
 - **Video**: 31 kHz progressive VGA via the imported scandoubler
-  (`contrib/basys3/vga_scandoubler.v`). sw(13) switches to 15 kHz TV mode
+  (`mist/scandoubler.v`). sw(13) switches to 15 kHz TV mode
   (native RGB + composite sync on HS). White-on-black monochrome picture.
 - **Sound**: mono PWM audio on PmodAMP2.
 - **Controls**: PS/2 keyboard + JA joystick (OR-merged); pushbuttons
